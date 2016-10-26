@@ -1,0 +1,18 @@
+- Character walking through haunted mansion (Entrance and exit)
+- Minimum of 6 rooms
+- Each room must contain objects that "do something", that is a CHALLENGE
+	- Light switches
+	- Key
+	- etc..
+- Some rooms must have more then one exit (to find exit)
+- Must be multiple instances of some objects
+- Computer Controlled Creatures
+- Implement two different means in seeing the world
+	- First Person
+	- Third Person (Moving camera)
+	- Switch between views at will
+- Wall Collision
+
+Extra Credit:
+- Textures
+- Weapons

@@ -25,20 +25,16 @@
 # Assumes the following file exists in the proper place.
 include /home/guso/Documents/cs4250/code-egs/Makefile.defs
 
-# Next line says what options to use to compile programs
-OPTIONS+=-Wall
+# The first item in the file is what will be made if you just type
+# make (i.e. with no arguments).
+all: hauntedHouse
+	
+hauntedHouse: hauntedHouse.cc objloader.o
+	$(CC) hauntedHouse.cc $(InitShader) objloader.o $(OPTIONS) $(LDLIBS) -o hauntedHouse
 
-OBJECTS = $(patsubst %.cc,%,$(wildcard *.cc))
-
-all: $(OBJECTS)
-
-# patterns to allow compilation of many c++ or c programs
-.c:
-	$(CC)  $@.c   $(InitShader) $(OPTIONS) $(LDLIBS) -o $@
-
-.cc:
-	$(CC)  $@.cc  $(InitShader) $(OPTIONS) $(LDLIBS) -o $@
-
-clean:
-	rm -f $(OBJECTS) *~
-
+objloader.o: src/objloader.h src/objloader.cc
+	$(CC) src/objloader.cc -c $(OPTIONS)
+	
+# pattern to clean the directory
+clean: 
+	rm -f hauntedHouse objloader.o
