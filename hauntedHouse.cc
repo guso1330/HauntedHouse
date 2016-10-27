@@ -13,9 +13,8 @@
 //*******************************************************************
 
 // TO DO:
-//	- Obj loader (the benny box one: https://github.com/BennyQBD/ModernOpenGLTutorial)
-//  	- Another .obj loader (http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/)
-//	- Rendering one 3D object
+//	- Watch thebennybox - Intro to Modern OpenGL Tutorial #6: Camera and Perspective	
+//		- There's also a guy name Jamie King who does good opengl tutorials
 //
 
 #include <iostream>
@@ -87,9 +86,13 @@ extern "C" void display() {
 	projection = Ortho(l, r, bottom, top, near, far);
 	glUniformMatrix4fv(matrix_loc, 1, GL_TRUE, model_view);
 	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
-	// glDrawArrays(GL_TRIANGLES, 0, vertices.size()); 
 
+	
+	// For wireframe rendering
 	for(int i = 0; i<vertices.size(); i+=3) glDrawArrays(GL_LINE_LOOP, i, 3); 
+
+	// For solid rendering
+	// glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
 	glutSwapBuffers();
 }
@@ -180,7 +183,7 @@ int main(int argc, char **argv) {
 
 	glutInit(&argc, argv);
 
-	load_obj("models/m9.obj", vertices, normals);
+	load_obj("models/suzanne.obj", vertices, normals);
 	
 	// Handles all innitialization
 	myInit();
