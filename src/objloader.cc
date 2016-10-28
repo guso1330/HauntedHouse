@@ -16,11 +16,12 @@ void split_str(const string &s, char* delim, vector<string> &v) {
 }
 
 // load_obj - Definition for the load_obj function
-void load_obj(const char* filename, vector<vec4> &vertices, vector<vec4> &normals) {
+void load_obj(const char* filename, vector<vec4> &vertices, vector<vec2> &uvs, vector<vec4> &normals) {
 	
 	// Temporary storage
-	std::vector<unsigned int> vertexIndices, normalIndices;
+	std::vector<unsigned int> vertexIndices, uvIndices,normalIndices;
 	vector<vec4> temp_vertices;
+	vector<vec2> temp_uvs;
 	vector<vec4> temp_normals;
 
 	// create file variable
@@ -50,6 +51,13 @@ void load_obj(const char* filename, vector<vec4> &vertices, vector<vec4> &normal
 				temp_normals.push_back(n);
 			}
 
+			// Get the UV's for the mesh
+			else if (line.substr(0,3) == "vt ") {
+				istringstream s(line.substr(3));
+				vec2 u;
+				s >> u.x; s >> u.y; // get the x and y coordinate for the uv
+				temp_uvs.push_back(u);
+			}
 			// Get the faces and how they are made up
 			else if (line.substr(0, 2) == "f ") {
 				string s  = line.substr(2, line.length());
@@ -70,7 +78,7 @@ void load_obj(const char* filename, vector<vec4> &vertices, vector<vec4> &normal
 							vertexIndices.push_back(a);
 						}
 						else if(j == 1) {
-
+							uvIndices.push_back(a);
 						}
 						else if(j == 2) {
 							normalIndices.push_back(a);
@@ -95,14 +103,17 @@ void load_obj(const char* filename, vector<vec4> &vertices, vector<vec4> &normal
 	for(unsigned int i=0; i<vertexIndices.size(); ++i) {
 
 		unsigned int vIndex = vertexIndices[i];
+		unsigned int uIndex = uvIndices[i];
 		unsigned int nIndex = normalIndices[i];
 		
 		// Get the attributes thanks to the index
 		vec4 vertex = temp_vertices[ vIndex ];
+		vec2 uv = temp_uvs[ uIndex ];
 		vec4 normal = temp_normals[ nIndex ];
 
 		// Put the attributes in buffers
 		vertices.push_back(vertex);
+		uvs.push_back(uv);
 		normals.push_back(normal);
 	}
 }

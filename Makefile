@@ -29,11 +29,15 @@ include /home/guso/Documents/cs4250/code-egs/Makefile.defs
 # make (i.e. with no arguments).
 all: hauntedHouse
 	
-hauntedHouse: hauntedHouse.cc objloader.o
-	$(CC) hauntedHouse.cc $(InitShader) objloader.o $(OPTIONS) $(LDLIBS) -o hauntedHouse
+hauntedHouse: hauntedHouse.cc mesh.o objloader.o
+	$(CC) hauntedHouse.cc $(InitShader) objloader.o mesh.o $(OPTIONS) $(LDLIBS) -o hauntedHouse
+
+mesh.o: src/mesh.h src/mesh.cc
+	$(CC) src/mesh.cc -c $(OPTIONS)
 
 objloader.o: src/objloader.h src/objloader.cc
 	$(CC) src/objloader.cc -c $(OPTIONS)
+
 	
 # pattern to clean the directory
 clean: 

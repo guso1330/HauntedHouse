@@ -27,7 +27,7 @@ using namespace std;
 //
 //	Adapted from: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Load_OBJ
 //******************************************************************
-void load_obj(const char* filename, vector<vec4> &vertices, vector<vec4> &normals);
+void load_obj(const char* filename, vector<vec4> &vertices, vector<vec2> &uvs, vector<vec4> &normals);
 
 //******************************************************************
 //                                                                  
