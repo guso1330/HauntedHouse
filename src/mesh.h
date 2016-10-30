@@ -20,61 +20,60 @@
 #include <vector>
 #include "objloader.h"
 
-//******************************************************************* 
-//                                                                    
-//  Struct:      Vertex struct
-//                                                                     
-//  Author:      Gus Oberdick
-//  Email:       go125412@ohio.edu
-//                                                                    
-//                                                                    
-//  Description: This class allows each vertex to store it's own
-//				 position, texture coordinate, and normal
-//                                                                    
-//  Date:        October 27, 2016 3:41:00pm
-//                                                                    
-//*******************************************************************
 
-// ENUM to store the different buffer positions
-enum MeshBufferPositions {
-	POSITION_VB,
-	TEXCOORD_VB,
-	NORMAL_VB
-};
-
+// Functions from square.h
 class Mesh {
 	public:
-		// Simple constructor that will read in variable
-		Mesh(const char* filename);
+		// CONSTRUCTORs
+		Mesh(); // default constructor
+		Mesh(const char *filename, GLuint nindex, GLint ncolorLoc, GLint matrix_loc); // Parametric constructor
 
-		// void Draw();
-		virtual ~Mesh();
+		// Manipulator Functions
+		void InitMesh(const char *filename);
+		void DrawSolid();
+		void DrawWireframe();
+		void Move(GLfloat nx, GLfloat ny, GLfloat nz); // point form
+		void Move(vec4 where); // vector form
+		void Rotate(int axis, GLfloat theta);
+		void Update();
 
-		std::vector<vec4> GetVertices() { return Vertices; }
-		std::vector<vec2> GetUVs() { return UVs; }
-		std::vector<vec4> GetNormals() { return Normals; }
+		// Set Functions
+		void SetModelView(mat4 m);
+		inline void SetSpeed(GLfloat nspeed) { speed = nspeed; }
+		void SetColor(GLfloat nr, GLfloat ng, GLfloat nb) { r = nr; g = ng; b = nb; }
+		void ChangeGoal(GLfloat nx, GLfloat ny, GLfloat nz);
+		void ChangeGoal(vec3 npos);
+
+		// Accessor functions
+		inline vector<vec4> GetVertices() { return Vertices; }
+		inline unsigned int GetVerticesSize() const { return Vertices.size(); }
+		inline vec3 GetPos() const { return vec3(x, y, z); }
+		inline GLuint GetIndex() const { return index; }
+
+		// Debug functions
+		void PrintVertices() {
+			for(size_t i=0; i<Vertices.size(); ++i) {
+				cout << Vertices[i] << " ";
+			}
+			cout << endl;
+		}
 
 	private:
-		//
-		// Private Methods
-		//
-	    void InitMesh();
-		// Equality operator
-		void operator=(const Mesh& mesh) {}
-		// Copy Constructor
-		Mesh(const Mesh& mesh) {}
-		
-		//
-		// Private Variables
-		//
-		std::vector<vec4> Vertices;
+		GLfloat speed;
+
+		GLuint index;
+		GLint matrix_loc;
+
+		GLfloat goal_x, goal_y, goal_z;
+		GLfloat x, y, z;
+		GLfloat r, g, b;
+		mat4 ModelView;
+
+		GLint colorLoc;
+		GLint last_time;
+		std::vector<vec4> *Vertices;
 		std::vector<vec2> UVs;
 		std::vector<vec4> Normals;
-
-		static const unsigned int NUM_BUFFERS = 3; // Instantiate how many buffers we'll be using
-		GLuint MyVAO;
-		GLuint MyVertexArrayBuffers[NUM_BUFFERS];
-		unsigned int MyNumIndices;
 };
 
 #endif // MESH_H

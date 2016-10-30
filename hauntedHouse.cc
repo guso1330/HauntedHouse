@@ -15,7 +15,8 @@
 // TO DO:
 //	- Watch thebennybox - Intro to Modern OpenGL Tutorial #6: Camera and Perspective	
 //		- There's also a guy name Jamie King who does good opengl tutorials
-//
+// 
+//	- Implement a transform class that will handle all rotation of meshes
 
 #include <iostream>
 #include "Angel.h"
@@ -26,9 +27,9 @@
 #include <cstring>
 #include <typeinfo>
 
-#include "src/objloader.h"
 #include "src/mesh.h"
 #include "src/camera.h"
+#include "src/utilities.h"
 
 using namespace std;
 
@@ -40,8 +41,10 @@ typedef Angel::vec4 color4;
 //
 
 // OBJECTS IN SCENE
-// Mesh Cube("models/cube.obj");
-// Mesh Pipe("models/pipe.obj");
+Mesh *Cube;
+Mesh *Pipe;
+Mesh *Level;
+Mesh *Door;
 
 // Window dimension constants
 int win_w = 1024;
@@ -54,6 +57,7 @@ enum {Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3};
 int      Axis = Xaxis;
 GLfloat  Theta[NumAxes] = {0.0, 0.0, 0.0};
 
+// Global storage devices
 vector<vec4> vertices;
 vector<vec2> uvs;
 vector<vec4> normals;
@@ -74,8 +78,9 @@ mat4 model_view;
 mat4 projection;
 
 // Initialize the camera
-Camera camera(vec4(0.0f, 0.0f, -2.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
+Camera camera(vec4(0.0f, 1.0f, 0.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
 float camera_speed = 0.5f;
+bool CameraThirdPersonOn = true;
 
 //
 // CALLBACKS
@@ -84,63 +89,99 @@ extern "C" void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//  Generate tha model-view matrixn
-
-	const vec3 viewer_pos(0.0, 0.0, 1.0);
-
-	model_view = (Translate(-viewer_pos)*
-				RotateX(Theta[Xaxis]) *
-				RotateY(Theta[Yaxis]) *
-				RotateZ(Theta[Zaxis]));
+	const vec3 viewer_pos(2.0, 0.0, 1.0);
 
 	projection = camera.GetViewProjection();
-	glUniformMatrix4fv(matrix_loc, 1, GL_TRUE, model_view);
+
+	// // Draw PIPE
+	// if(Pipe->GetPos() == vec3(0.0, 2.0, 0.0)) {
+	// 	Pipe->ChangeGoal(2.0, -2.0, 20.0);
+	// }
+	// else if(Pipe->GetPos() == vec3(2.0, -2.0, 20.0)) {
+	// 	Pipe->ChangeGoal(0.0, 2.0, 0.0);
+	// }
+
+	// Pipe->DrawWireframe();
+
+	// Draw CUBE
+	if(Cube->GetPos() == vec3(-2.0, 0.0, 0.0)) {
+		Cube->ChangeGoal(2.0, 0.0, 0.0);
+	}
+	else if(Cube->GetPos() == vec3(2.0, 0.0, 0.0)) {
+		Cube->ChangeGoal(-2.0, 0.0, 0.0);
+	}
+
+	Cube->SetModelView(Translate(0.0, 0.0, 1.5));
+
+	// Pipe->DrawSolid();
+	// Level->DrawSolid();
+	// Door->DrawWireframe();
+	Cube->DrawWireframe();
+	// cout << "Player Position: " << Cube->GetPos();
+
+	// Send Camera data
 	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
-
-	
-	// For wireframe rendering
-	for(int i = 0; i<vertices.size(); i+=3) glDrawArrays(GL_LINE_LOOP, i, 3);
-	// for(int i = 0; i<Pipe.GetVertices().size(); i+=3) glDrawArrays(GL_LINE_LOOP, i, 3);
-
-	// For solid rendering
-	// glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
 	glutSwapBuffers();
 }
 
 extern "C" void key(unsigned char k, int nx, int ny) {
 	switch (k) {
-		case 'q':
-		case 'Q': 
+		case 27: // escape key
 			exit(0);
 			break;
-		case 'w':
-		case 'W':
-			camera.MoveForward(camera_speed);
-			break;
-		case 's':
-		case 'S':
-			camera.MoveForward(-camera_speed);
-			break;
-		case 'd':
-		case 'D':
-			camera.MoveRight(-camera_speed);
-			break;
-		case 'a':
-		case 'A':
-			camera.MoveRight(camera_speed);
-			break;
-		case 'r':
-			camera.Rotate(-5.0);
-			break;
-		case 'e':
-			camera.Rotate(5.0);
+		case 'l':
+		case 'L':
+			CameraThirdPersonOn = !CameraThirdPersonOn;
+			cout << "CameraThirdPersonOn set to " << CameraThirdPersonOn;
 			break;
 
 		default:
 			// Anything else.
 			break;
 	}
+
+	if(CameraThirdPersonOn) {
+		switch(k) {
+			// Camera Forward
+			case 'w':
+			case 'W':
+				camera.MoveForward(camera_speed);
+				break;
+
+			// Camera Backward
+			case 's':
+			case 'S':
+				camera.MoveForward(-camera_speed);
+				break;
+			// Camera Right
+			case 'd':
+			case 'D':
+				camera.MoveRight(-camera_speed);
+				break;
+			// Camera Left
+			case 'a':
+			case 'A':
+				camera.MoveRight(camera_speed);
+				break;
+			// Camera Rotate right
+			case 'e':
+				camera.Rotate(-5.0);
+				break;
+			// Camera Rotate left
+			case 'q':
+				camera.Rotate(5.0);
+				break;
+			default:
+				break;
+		}
+	}
+	else {
+		// Do nothing right now.
+	}
+
+	// CameraControls(k, camera, camera_speed);
+
 	// Something might have changed requiring redisplay
 	glutPostRedisplay();
 }
@@ -157,13 +198,9 @@ extern "C" void mouse(int button, int state, int x, int y)
 }
 extern "C" void idle()
 {
-	static GLint time=glutGet(GLUT_ELAPSED_TIME);
-	Theta[Axis] += incr*(glutGet(GLUT_ELAPSED_TIME)-time);
-	time = glutGet(GLUT_ELAPSED_TIME);
 
-	if (Theta[Axis] > 360.0) {
-		Theta[Axis] -= 360.0;
-	}
+	Cube->Update();
+	// Pipe->Update();
 
 	glutPostRedisplay();
 }
@@ -172,16 +209,13 @@ void GLUTinit() {
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(win_w, win_h);
 	glutInitWindowPosition(20,20);
-
 	glutCreateWindow("Haunted House");
-
 	glClearColor(0.0, 0.0, 0.0, 1.0); // Clear screen to black
 
 	/* CALLBACKS */
 	glutDisplayFunc(display);
 	glutIdleFunc(idle);
 	glutMouseFunc (mouse);
-
 	// glutMotionFunc (motion);
 	// glutPassiveMotionFunc (passivemotion);
 	glutKeyboardFunc(key);
@@ -189,6 +223,9 @@ void GLUTinit() {
 }
 
 void init() {
+
+	GLint colorLoc;
+
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -196,43 +233,71 @@ void init() {
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(vec4), &vertices[0], GL_STATIC_DRAW);
-
-	// glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-	// glBufferData(GL_ARRAY_BUFFER, Pipe.GetVertices().size()*sizeof(vec4), &Pipe.GetVertices()[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(loc);
-	glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// get shader program
 	program = InitShader("vshader.glsl", "fshader.glsl");
 	glUseProgram(program);
 
+	colorLoc  = glGetUniformLocation(program, "vcolor");
+	if (colorLoc==-1) {
+		std::cerr << "Unable to find colorLoc parameter" << std::endl;
+	}
+
 	loc = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(loc);
+	glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
 	matrix_loc = glGetUniformLocation(program, "model_view");
 	projection_loc = glGetUniformLocation(program, "projection");
+
+	// 
+	// Build All Objects In Scene
+	//
+	//
+
+	Cube = new Mesh("models/cube.obj", 0, colorLoc, matrix_loc);
+	vector<vec4> CubeVerts = Cube->GetVertices();
+	combineVec4Vectors(vertices, CubeVerts);
+
+	// Pipe = new Mesh("models/pipe.obj", 0, colorLoc, matrix_loc);
+	// combineVec4Vectors(vertices, Pipe->GetVertices());
+	// Pipe->Move(0.0, 2.0, 0.0);
+
+	// Level = new Mesh("models/level.obj", Pipe->GetVerticesSize(), colorLoc, matrix_loc);
+	// combineVec4Vectors(vertices, Level->GetVertices());
+	// Level->Rotate(2, 180);
+	// Level->SetColor((22.0/255.0), (41.0/255.0), (11.0/255.0));
+	// cout << "# of Level verts: " << Level->GetVerticesSize() << " at index " << Level->GetIndex() << endl;
+
+	// Door = new Mesh("models/door.obj", Level->GetVerticesSize()+1, colorLoc, matrix_loc);
+	// combineVec4Vectors(vertices, Door->GetVertices());
+	// Door->Rotate(2, 180);
+	// Door->Move(0.0, 0.0, 1.0);
+	// Door->SetColor((145.0/255.0), (63.0/255.0), (15.0/255.0));
+	// cout << "# of Door verts: " << Door->GetVerticesSize() << " at index " << Door->GetIndex() << endl;
+
+	// Cube = new Mesh("models/cube.obj", Level->GetVerticesSize()+Door->GetVerticesSize(), colorLoc, matrix_loc);
+	// // Cube = new Mesh("models/cube.obj", 0, colorLoc, matrix_loc);
+	// combineVec4Vectors(vertices, Cube->GetVertices());
+	// Cube->Move(2.0, 0.0, 0.0);
+	// Cube->SetColor(1.0, 0.0, 0.0);
+	// cout << "# of Cube verts: " << Cube->GetVerticesSize() << " at index " << Cube->GetIndex() << endl;
+	
+	cout << endl << "# of vertices verts: " << vertices.size() << endl;
+
+	glBufferData(GL_ARRAY_BUFFER, (vertices.size())*sizeof(vec4), &vertices[0], GL_STATIC_DRAW);
 
 	glClearColor(0.0, 0.0, 0.0, 1.0); // white background
 }
 
 int main(int argc, char **argv) {
-
 	glutInit(&argc, argv);
-
-	load_obj("models/pipe.obj", vertices, uvs, normals);
-	
 	// Initializes the GLUT and callbacks 
 	GLUTinit();
-
 	glewInit();
-
 	// Initializes the buffers and vao	
 	init();
-
 	glEnable(GL_DEPTH_TEST);
-
 	glutMainLoop(); // enter event loop
-
 	return (EXIT_SUCCESS);
 }

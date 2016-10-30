@@ -44,6 +44,8 @@ struct Camera {
 			up = vec4(normalize(rotation * up));
 		}
 
+		// void CameraLookAt(const vec4 lookAtPos)
+
 	private:
 		mat4 projection;
 		vec4 pos;
