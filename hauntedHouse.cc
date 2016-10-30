@@ -44,13 +44,18 @@ typedef Angel::vec4 color4;
 Mesh *Cube;
 Mesh *Pipe;
 Mesh *Level;
+Mesh *LevelFloor;
 Mesh *Door;
+Mesh *Key;
 
 // Window dimension constants
 int win_w = 1024;
 int win_h = 768;
 
-GLfloat incr =0.06;
+// Array for keyboard values
+bool key[255];
+
+vec4 starting_pos = vec4(0.0f, 1.0f, 2.0f, 0.0f);
 
 // Array of rotation angles (in degrees) for each coordinate axis
 enum {Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3};
@@ -71,9 +76,11 @@ mat4 model_view;
 mat4 projection;
 
 // Initialize the camera
-Camera camera(vec4(0.0f, 1.0f, -4.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
+Camera camera(starting_pos, 70.0f, (float)win_w/(float)win_h, 0.2f, 30.0f);
 float camera_speed = 0.5f;
 bool CameraThirdPersonOn = true;
+
+void UpdateCamera();
 
 //
 // CALLBACKS
@@ -82,24 +89,47 @@ extern "C" void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// cout << "Camera Pos: " << camera.GetPos().x << ", " << camera.GetPos().z << endl; // Pos Debugging
+	
 	Level->DrawWireframe();
+	LevelFloor->DrawWireframe();
 
+	Cube->DrawSolid();
+
+	// Drawing all doors
+	Door->Move(0.0, 0.0, 20.0);
+	Door->DrawWireframe(); // Door 1
+	Door->Move(7.0, 0.0, 36.0);
+	Door->DrawWireframe(); // Door 2
+	Door->Move(-11.0, 0.0, 36.0); // Door 3
+	Door->DrawWireframe();
+	Door->Move(-11.0, 0.0, 46.0); // Door 4
+	Door->DrawWireframe();
+	Door->Move(-11.0, 0.0, 70.0); // Door 5
+	Door->DrawWireframe();
+	Door->Move(0.0, 0.0, 94.0); // Door 6
 	Door->DrawWireframe();
 
 	// Send Camera data
 	projection = camera.GetViewProjection();
 	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 
+	// set camera position to behind the cube
+	vec4 CubePos = Cube->GetPos();
+	// camera.SetPos(vec4(CubePos.x, CubePos.y + 0.5, CubePos.z - 1.0, CubePos.w));
+	// camera.SetPos(Cube->GetPos()); // First person
+	UpdateCamera();
+	
 	glutSwapBuffers();
 }
 
-extern "C" void key(unsigned char k, int nx, int ny) {
+extern "C" void keyDown(unsigned char k, int nx, int ny) {
 	switch (k) {
-		case 27: // escape key
+		case 'q': // escape key
 			exit(0);
 			break;
-		case 'l':
-		case 'L':
+		case 'p':
+		case 'P':
 			CameraThirdPersonOn = !CameraThirdPersonOn;
 			cout << "CameraThirdPersonOn set to " << CameraThirdPersonOn;
 			break;
@@ -110,48 +140,20 @@ extern "C" void key(unsigned char k, int nx, int ny) {
 	}
 
 	if(CameraThirdPersonOn) {
-		switch(k) {
-			// Camera Forward
-			case 'w':
-			case 'W':
-				camera.MoveForward(camera_speed);
-				break;
-
-			// Camera Backward
-			case 's':
-			case 'S':
-				camera.MoveForward(-camera_speed);
-				break;
-			// Camera Right
-			case 'd':
-			case 'D':
-				camera.MoveRight(-camera_speed);
-				break;
-			// Camera Left
-			case 'a':
-			case 'A':
-				camera.MoveRight(camera_speed);
-				break;
-			// Camera Rotate right
-			case 'e':
-				camera.Rotate(-5.0);
-				break;
-			// Camera Rotate left
-			case 'q':
-				camera.Rotate(5.0);
-				break;
-			default:
-				break;
-		}
+		key[k] = true;
 	}
 	else {
 		// Do nothing right now.
 	}
 
-	// CameraControls(k, camera, camera_speed);
-
 	// Something might have changed requiring redisplay
 	glutPostRedisplay();
+}
+
+extern "C" void keyUp(unsigned char k, int x, int y) {
+	if(CameraThirdPersonOn) {
+		key[k] = false;
+	}
 }
 
 extern "C" void mouse(int button, int state, int x, int y) {
@@ -172,8 +174,29 @@ extern "C" void idle() {
 	glutPostRedisplay();
 }
 
+void UpdateCamera() {
+	if(key['w'] || key['W']) {
+		camera.MoveForward(camera_speed);
+	}
+	if(key['s'] || key['S']) {
+		camera.MoveForward(-camera_speed);
+	}
+	if(key['d'] || key['D']) {
+		camera.MoveRight(-camera_speed);
+	}
+	if(key['a'] || key['A']) {
+		camera.MoveRight(camera_speed);
+	}
+	if(key['l'] || key['L']) {
+		camera.Rotate(-8.0);
+	}
+	if(key['k'] || key['K']) {
+		camera.Rotate(8.0);
+	}
+}
+
 void GLUTinit() {	
-	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(win_w, win_h);
 	glutInitWindowPosition(20,20);
 	glutCreateWindow("Haunted House");
@@ -185,7 +208,8 @@ void GLUTinit() {
 	glutMouseFunc (mouse);
 	// glutMotionFunc (motion);
 	// glutPassiveMotionFunc (passivemotion);
-	glutKeyboardFunc(key);
+	glutKeyboardFunc(keyDown);
+	glutKeyboardUpFunc(keyUp);
 	// glutReshapeFunc (myReshape);
 }
 
@@ -222,7 +246,7 @@ void init() {
 	//
 	Cube = new Mesh("models/cube.obj", 0, colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Cube->GetVertices());
-	Cube->Move(-2.0, 0.0, 0.0);
+	Cube->Move(0.0, 1.0, 5.0);
 	Cube->SetColor(1.0, 0.0, 0.0);
 
 	Pipe = new Mesh("models/pipe.obj", Cube->GetVerticesSize(), colorLoc, matrix_loc);
@@ -230,18 +254,30 @@ void init() {
 	Pipe->Move(0.0, 2.0, 0.0);
 	Pipe->SetColor(0.0, 1.0, 0.0);
 
-	Level = new Mesh("models/level.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize(), colorLoc, matrix_loc);
+	Level = new Mesh("models/level_walls.obj", Cube->GetVerticesSize() + Pipe->GetVerticesSize(), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Level->GetVertices());
+	Level->SetColor((75.0/255.0), (18.0/255.0), (18.0/255.0));
 	Level->Rotate(2, 180);
 
-	Door = new Mesh("models/door.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize()+Level->GetVerticesSize(), colorLoc, matrix_loc);
+	LevelFloor = new Mesh("models/level_floor.obj", Cube->GetVerticesSize() + Pipe->GetVerticesSize() + Level->GetVerticesSize(), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, LevelFloor->GetVertices());
+	LevelFloor->SetColor((22.0/255.0), (55.0/255.0), (21.0/255.0));
+	LevelFloor->Rotate(2, 180);
+	
+	Door = new Mesh("models/door.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize()+Level->GetVerticesSize()+LevelFloor->GetVerticesSize(), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Door->GetVertices());
-	Door->Move(0.0, 0.0, 20.0);
-	Door->SetColor(1.0, 1.0, 0.0);
+	Door->Rotate(2, 180);
+	Door->SetColor((114.0/255.0), (48.0/255.0), (24.0/255.0));
 
 	cout << "Verts in vertices: " << vertices.size() << endl;
+	cout << camera.GetPos() << " " << Cube->GetPos() << endl;
 
 	glBufferData(GL_ARRAY_BUFFER, (vertices.size())*sizeof(vec4), &vertices[0], GL_STATIC_DRAW);
+
+	glClearDepth(1.0f);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
 	glClearColor(0.0, 0.0, 0.0, 1.0); // white background
 }
@@ -253,7 +289,6 @@ int main(int argc, char **argv) {
 	glewInit();
 	// Initializes the buffers and vao	
 	init();
-	glEnable(GL_DEPTH_TEST);
 	glutMainLoop(); // enter event loop
 	return (EXIT_SUCCESS);
 }

@@ -49,6 +49,7 @@ class Mesh {
 		inline unsigned int GetVerticesSize() const { return Vertices.size(); }
 		inline vec3 GetPos() const { return vec3(x, y, z); }
 		inline GLuint GetIndex() const { return index; }
+		inline GLfloat GetSpeed() const { return speed; }
 
 		// Debug functions
 		void PrintVertices() {
