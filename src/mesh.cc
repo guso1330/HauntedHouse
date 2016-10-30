@@ -43,7 +43,7 @@ void Mesh::DrawSolid()
 void Mesh::DrawWireframe() {
 	glUniform4f(colorLoc, r, g, b, 1.0);
 	glUniformMatrix4fv(matrix_loc, 1, GL_TRUE, ModelView);
-	for(int i = index; i < GetVertices().size(); i+=3)
+	for(int i = index; i < index+GetVertices().size(); i+=3)
 		glDrawArrays(GL_LINE_LOOP, i, 3);
 }
 

@@ -44,6 +44,7 @@ typedef Angel::vec4 color4;
 Mesh *Cube;
 Mesh *Pipe;
 Mesh *Level;
+Mesh *Door;
 
 // Window dimension constants
 int win_w = 1024;
@@ -62,22 +63,15 @@ vector<vec2> uvs;
 vector<vec4> normals;
 
 GLuint program;
-
 GLuint loc;
 GLint matrix_loc, projection_loc;
-
-point4 at = vec4(0.0, 0.0, 0.0, 1.0);
-point4 eye = vec4(0.0, 0.0, 2.0, 1.0);
-vec4 up = vec4(0.0, 1.0, 0.0, 0.0);
-
-GLfloat l= -2.0, r=2.0, top=2.0, bottom= -2.0, near= -100.0, far=100.0;
 
 // Declaring the projection and model view
 mat4 model_view;
 mat4 projection;
 
 // Initialize the camera
-Camera camera(vec4(0.0f, 0.0f, -4.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
+Camera camera(vec4(0.0f, 1.0f, -4.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
 float camera_speed = 0.5f;
 bool CameraThirdPersonOn = true;
 
@@ -88,26 +82,9 @@ extern "C" void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// const vec3 viewer_pos(2.0, 0.0, 1.0);
+	Level->DrawWireframe();
 
-	if(Pipe->GetPos() == vec3(0.0, 2.0, 0.0)) {
-		Pipe->ChangeGoal(2.0, -2.0, 20.0);
-	}
-	else if(Pipe->GetPos() == vec3(2.0, -2.0, 20.0)) {
-		Pipe->ChangeGoal(0.0, 2.0, 0.0);
-	}
-
-	Pipe->DrawWireframe();
-
-	// Draw CUBE
-	if(Cube->GetPos() == vec3(-2.0, 0.0, 0.0)) {
-		Cube->ChangeGoal(2.0, 0.0, 0.0);
-	}
-	else if(Cube->GetPos() == vec3(2.0, 0.0, 0.0)) {
-		Cube->ChangeGoal(-2.0, 0.0, 0.0);
-	}
-
-	Cube->DrawSolid();
+	Door->DrawWireframe();
 
 	// Send Camera data
 	projection = camera.GetViewProjection();
@@ -189,8 +166,8 @@ extern "C" void mouse(int button, int state, int x, int y) {
 
 extern "C" void idle() {
 
-	Cube->Update();
-	Pipe->Update();
+	// Cube->Update();
+	// Pipe->Update();
 
 	glutPostRedisplay();
 }
@@ -253,6 +230,14 @@ void init() {
 	Pipe->Move(0.0, 2.0, 0.0);
 	Pipe->SetColor(0.0, 1.0, 0.0);
 
+	Level = new Mesh("models/level.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize(), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, Level->GetVertices());
+	Level->Rotate(2, 180);
+
+	Door = new Mesh("models/door.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize()+Level->GetVerticesSize(), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, Door->GetVertices());
+	Door->Move(0.0, 0.0, 20.0);
+	Door->SetColor(1.0, 1.0, 0.0);
 
 	cout << "Verts in vertices: " << vertices.size() << endl;
 
