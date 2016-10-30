@@ -45,7 +45,7 @@ class Mesh {
 		void ChangeGoal(vec3 npos);
 
 		// Accessor functions
-		inline vector<vec4> GetVertices() { return Vertices; }
+		inline vector<vec4> GetVertices() const { return Vertices; }
 		inline unsigned int GetVerticesSize() const { return Vertices.size(); }
 		inline vec3 GetPos() const { return vec3(x, y, z); }
 		inline GLuint GetIndex() const { return index; }
@@ -71,7 +71,7 @@ class Mesh {
 
 		GLint colorLoc;
 		GLint last_time;
-		std::vector<vec4> *Vertices;
+		std::vector<vec4> Vertices;
 		std::vector<vec2> UVs;
 		std::vector<vec4> Normals;
 };

@@ -4,7 +4,8 @@
 // Default
 Mesh::Mesh() {
 	index = 0;
-	r = g = b = x = y = z = 0.0;
+	x = y = z = 0.0;
+	r = g = b = 1.0;
 	goal_x = goal_y = goal_z = 0.0;
 	speed = 0.003;
 	ModelView = mat4();
@@ -22,7 +23,8 @@ Mesh::Mesh(const char *filename, GLuint nindex, GLint ncolorLoc, GLint nmatrix_l
 	matrix_loc = nmatrix_loc;
 	colorLoc = ncolorLoc;
 	InitMesh(filename);
-	r = g = b = x = y = z = 0.0;
+	x = y = z = 0.0;
+	r = g = b = 1.0;
 	goal_x = goal_y = goal_z = 0.0;
 	speed = 0.003;
 	ModelView = mat4();
@@ -86,7 +88,7 @@ void Mesh::Update()
 		x = goal_x;
 		y = goal_y;
 		z = goal_z;
-		ModelView = (Translate(vec3(x, y, z)));
+		ModelView = Translate(vec3(x, y, z));
 	}
 	last_time = time;
 }

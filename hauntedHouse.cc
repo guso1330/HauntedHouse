@@ -44,7 +44,6 @@ typedef Angel::vec4 color4;
 Mesh *Cube;
 Mesh *Pipe;
 Mesh *Level;
-Mesh *Door;
 
 // Window dimension constants
 int win_w = 1024;
@@ -78,7 +77,7 @@ mat4 model_view;
 mat4 projection;
 
 // Initialize the camera
-Camera camera(vec4(0.0f, 1.0f, 0.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
+Camera camera(vec4(0.0f, 0.0f, -4.0f, 0.0f), 70.0f, (float)win_w/(float)win_h, 0.1f, 100.0f);
 float camera_speed = 0.5f;
 bool CameraThirdPersonOn = true;
 
@@ -89,19 +88,16 @@ extern "C" void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	const vec3 viewer_pos(2.0, 0.0, 1.0);
+	// const vec3 viewer_pos(2.0, 0.0, 1.0);
 
-	projection = camera.GetViewProjection();
+	if(Pipe->GetPos() == vec3(0.0, 2.0, 0.0)) {
+		Pipe->ChangeGoal(2.0, -2.0, 20.0);
+	}
+	else if(Pipe->GetPos() == vec3(2.0, -2.0, 20.0)) {
+		Pipe->ChangeGoal(0.0, 2.0, 0.0);
+	}
 
-	// // Draw PIPE
-	// if(Pipe->GetPos() == vec3(0.0, 2.0, 0.0)) {
-	// 	Pipe->ChangeGoal(2.0, -2.0, 20.0);
-	// }
-	// else if(Pipe->GetPos() == vec3(2.0, -2.0, 20.0)) {
-	// 	Pipe->ChangeGoal(0.0, 2.0, 0.0);
-	// }
-
-	// Pipe->DrawWireframe();
+	Pipe->DrawWireframe();
 
 	// Draw CUBE
 	if(Cube->GetPos() == vec3(-2.0, 0.0, 0.0)) {
@@ -111,15 +107,10 @@ extern "C" void display() {
 		Cube->ChangeGoal(-2.0, 0.0, 0.0);
 	}
 
-	Cube->SetModelView(Translate(0.0, 0.0, 1.5));
-
-	// Pipe->DrawSolid();
-	// Level->DrawSolid();
-	// Door->DrawWireframe();
-	Cube->DrawWireframe();
-	// cout << "Player Position: " << Cube->GetPos();
+	Cube->DrawSolid();
 
 	// Send Camera data
+	projection = camera.GetViewProjection();
 	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 
 	glutSwapBuffers();
@@ -186,8 +177,7 @@ extern "C" void key(unsigned char k, int nx, int ny) {
 	glutPostRedisplay();
 }
 
-extern "C" void mouse(int button, int state, int x, int y)
-{
+extern "C" void mouse(int button, int state, int x, int y) {
   if (state == GLUT_DOWN) {
     switch(button) {
     case GLUT_LEFT_BUTTON:    Axis = Xaxis;  break;
@@ -196,11 +186,11 @@ extern "C" void mouse(int button, int state, int x, int y)
     }
   }
 }
-extern "C" void idle()
-{
+
+extern "C" void idle() {
 
 	Cube->Update();
-	// Pipe->Update();
+	Pipe->Update();
 
 	glutPostRedisplay();
 }
@@ -250,40 +240,21 @@ void init() {
 	matrix_loc = glGetUniformLocation(program, "model_view");
 	projection_loc = glGetUniformLocation(program, "projection");
 
-	// 
+	//
 	// Build All Objects In Scene
 	//
-	//
-
 	Cube = new Mesh("models/cube.obj", 0, colorLoc, matrix_loc);
-	vector<vec4> CubeVerts = Cube->GetVertices();
-	combineVec4Vectors(vertices, CubeVerts);
+	combineVec4Vectors(vertices, Cube->GetVertices());
+	Cube->Move(-2.0, 0.0, 0.0);
+	Cube->SetColor(1.0, 0.0, 0.0);
 
-	// Pipe = new Mesh("models/pipe.obj", 0, colorLoc, matrix_loc);
-	// combineVec4Vectors(vertices, Pipe->GetVertices());
-	// Pipe->Move(0.0, 2.0, 0.0);
+	Pipe = new Mesh("models/pipe.obj", Cube->GetVerticesSize(), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, Pipe->GetVertices());
+	Pipe->Move(0.0, 2.0, 0.0);
+	Pipe->SetColor(0.0, 1.0, 0.0);
 
-	// Level = new Mesh("models/level.obj", Pipe->GetVerticesSize(), colorLoc, matrix_loc);
-	// combineVec4Vectors(vertices, Level->GetVertices());
-	// Level->Rotate(2, 180);
-	// Level->SetColor((22.0/255.0), (41.0/255.0), (11.0/255.0));
-	// cout << "# of Level verts: " << Level->GetVerticesSize() << " at index " << Level->GetIndex() << endl;
 
-	// Door = new Mesh("models/door.obj", Level->GetVerticesSize()+1, colorLoc, matrix_loc);
-	// combineVec4Vectors(vertices, Door->GetVertices());
-	// Door->Rotate(2, 180);
-	// Door->Move(0.0, 0.0, 1.0);
-	// Door->SetColor((145.0/255.0), (63.0/255.0), (15.0/255.0));
-	// cout << "# of Door verts: " << Door->GetVerticesSize() << " at index " << Door->GetIndex() << endl;
-
-	// Cube = new Mesh("models/cube.obj", Level->GetVerticesSize()+Door->GetVerticesSize(), colorLoc, matrix_loc);
-	// // Cube = new Mesh("models/cube.obj", 0, colorLoc, matrix_loc);
-	// combineVec4Vectors(vertices, Cube->GetVertices());
-	// Cube->Move(2.0, 0.0, 0.0);
-	// Cube->SetColor(1.0, 0.0, 0.0);
-	// cout << "# of Cube verts: " << Cube->GetVerticesSize() << " at index " << Cube->GetIndex() << endl;
-	
-	cout << endl << "# of vertices verts: " << vertices.size() << endl;
+	cout << "Verts in vertices: " << vertices.size() << endl;
 
 	glBufferData(GL_ARRAY_BUFFER, (vertices.size())*sizeof(vec4), &vertices[0], GL_STATIC_DRAW);
 
