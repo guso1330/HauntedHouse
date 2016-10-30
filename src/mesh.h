@@ -15,8 +15,8 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <iostream>
 #include "Angel.h"
+#include <iostream>
 #include <vector>
 #include "objloader.h"
 
@@ -26,7 +26,7 @@ class Mesh {
 	public:
 		// CONSTRUCTORs
 		Mesh(); // default constructor
-		Mesh(const char *filename, GLuint nindex, GLint ncolorLoc, GLint matrix_loc); // Parametric constructor
+		Mesh(const char *filename, GLuint nindex, GLint ncolorLoc, GLint nmatrix_loc); // Parametric constructor
 
 		// Manipulator Functions
 		void InitMesh(const char *filename);

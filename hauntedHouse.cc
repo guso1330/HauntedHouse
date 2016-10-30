@@ -28,6 +28,7 @@
 #include <typeinfo>
 
 #include "src/mesh.h"
+#include "src/player.h"
 #include "src/camera.h"
 #include "src/utilities.h"
 
@@ -41,7 +42,7 @@ typedef Angel::vec4 color4;
 //
 
 // OBJECTS IN SCENE
-Mesh *Cube;
+Player *Cube;
 Mesh *Pipe;
 Mesh *Level;
 Mesh *LevelFloor;
@@ -76,11 +77,10 @@ mat4 model_view;
 mat4 projection;
 
 // Initialize the camera
-Camera camera(starting_pos, 70.0f, (float)win_w/(float)win_h, 0.2f, 30.0f);
-float camera_speed = 0.5f;
-bool CameraThirdPersonOn = true;
+Camera camera(starting_pos, 70.0f, (float)win_w/(float)win_h, 0.2f, 100.0f);
+bool CameraThirdPersonOn = false;
 
-void UpdateCamera();
+// void UpdateCamera();
 
 //
 // CALLBACKS
@@ -91,45 +91,49 @@ extern "C" void display() {
 
 	// cout << "Camera Pos: " << camera.GetPos().x << ", " << camera.GetPos().z << endl; // Pos Debugging
 	
-	Level->DrawWireframe();
-	LevelFloor->DrawWireframe();
+	Level->DrawSolid();
+	LevelFloor->DrawSolid();
 
 	Cube->DrawSolid();
 
 	// Drawing all doors
 	Door->Move(0.0, 0.0, 20.0);
-	Door->DrawWireframe(); // Door 1
+	Door->DrawSolid(); // Door 1
 	Door->Move(7.0, 0.0, 36.0);
-	Door->DrawWireframe(); // Door 2
+	Door->DrawSolid(); // Door 2
 	Door->Move(-11.0, 0.0, 36.0); // Door 3
-	Door->DrawWireframe();
+	Door->DrawSolid();
 	Door->Move(-11.0, 0.0, 46.0); // Door 4
-	Door->DrawWireframe();
+	Door->DrawSolid();
 	Door->Move(-11.0, 0.0, 70.0); // Door 5
-	Door->DrawWireframe();
+	Door->DrawSolid();
 	Door->Move(0.0, 0.0, 94.0); // Door 6
-	Door->DrawWireframe();
+	Door->DrawSolid();
 
 	// Send Camera data
 	projection = camera.GetViewProjection();
 	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 
 	// set camera position to behind the cube
-	vec4 CubePos = Cube->GetPos();
-	// camera.SetPos(vec4(CubePos.x, CubePos.y + 0.5, CubePos.z - 1.0, CubePos.w));
-	// camera.SetPos(Cube->GetPos()); // First person
-	UpdateCamera();
+
+	if(CameraThirdPersonOn)
+		ControlCamera(camera, key);
+	else {
+		vec4 CubePos = Cube->GetPos();
+		camera.SetPos(vec4(CubePos.x, CubePos.y + 1.0, CubePos.z - 1.2, CubePos.w));
+		ControlPlayer(Cube, key);
+	}
 	
 	glutSwapBuffers();
 }
 
 extern "C" void keyDown(unsigned char k, int nx, int ny) {
 	switch (k) {
-		case 'q': // escape key
+		case 27: // escape key
 			exit(0);
 			break;
-		case 'p':
-		case 'P':
+		case 't':
+		case 'T':
 			CameraThirdPersonOn = !CameraThirdPersonOn;
 			cout << "CameraThirdPersonOn set to " << CameraThirdPersonOn;
 			break;
@@ -139,12 +143,7 @@ extern "C" void keyDown(unsigned char k, int nx, int ny) {
 			break;
 	}
 
-	if(CameraThirdPersonOn) {
-		key[k] = true;
-	}
-	else {
-		// Do nothing right now.
-	}
+	key[k] = true;
 
 	// Something might have changed requiring redisplay
 	glutPostRedisplay();
@@ -159,43 +158,22 @@ extern "C" void keyUp(unsigned char k, int x, int y) {
 extern "C" void mouse(int button, int state, int x, int y) {
   if (state == GLUT_DOWN) {
     switch(button) {
-    case GLUT_LEFT_BUTTON:    Axis = Xaxis;  break;
-    case GLUT_MIDDLE_BUTTON:  Axis = Yaxis;  break;
-    case GLUT_RIGHT_BUTTON:   Axis = Zaxis;  break;
+		case GLUT_LEFT_BUTTON:    Axis = Xaxis;  break;
+		case GLUT_MIDDLE_BUTTON:  Axis = Yaxis;  break;
+		case GLUT_RIGHT_BUTTON:   Axis = Zaxis;  break;
     }
   }
 }
 
 extern "C" void idle() {
 
-	// Cube->Update();
+	Cube->Update();
 	// Pipe->Update();
 
 	glutPostRedisplay();
 }
 
-void UpdateCamera() {
-	if(key['w'] || key['W']) {
-		camera.MoveForward(camera_speed);
-	}
-	if(key['s'] || key['S']) {
-		camera.MoveForward(-camera_speed);
-	}
-	if(key['d'] || key['D']) {
-		camera.MoveRight(-camera_speed);
-	}
-	if(key['a'] || key['A']) {
-		camera.MoveRight(camera_speed);
-	}
-	if(key['l'] || key['L']) {
-		camera.Rotate(-8.0);
-	}
-	if(key['k'] || key['K']) {
-		camera.Rotate(8.0);
-	}
-}
-
-void GLUTinit() {	
+void GLUTinit() {
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(win_w, win_h);
 	glutInitWindowPosition(20,20);
@@ -244,9 +222,9 @@ void init() {
 	//
 	// Build All Objects In Scene
 	//
-	Cube = new Mesh("models/cube.obj", 0, colorLoc, matrix_loc);
+	Cube = new Player("models/cube.obj", 0, colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Cube->GetVertices());
-	Cube->Move(0.0, 1.0, 5.0);
+	Cube->Move(0.0, 0.5, 5.0);
 	Cube->SetColor(1.0, 0.0, 0.0);
 
 	Pipe = new Mesh("models/pipe.obj", Cube->GetVerticesSize(), colorLoc, matrix_loc);

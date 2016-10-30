@@ -51,6 +51,9 @@ void Mesh::Move(GLfloat nx, GLfloat ny, GLfloat nz) {
 	x = nx;
 	y = ny;
 	z = nz;
+	goal_x = nx;
+	goal_y = ny;
+	goal_z = nz;
 	ModelView = Translate(nx, ny, nz);
 }
 
@@ -58,6 +61,9 @@ void Mesh::Move(vec4 where) {
 	x = where.x;
 	y = where.y;
 	z = where.z;
+	goal_x = where.x;
+	goal_y = where.y;
+	goal_z = where.z;
 	ModelView = Translate(where);
 }
 
