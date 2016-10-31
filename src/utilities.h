@@ -5,9 +5,7 @@
 #include "mesh.h"
 #include <vector>
 
-float camera_speed = 0.5f;
-
-void ControlCamera(Camera &camera, bool key[]) {
+void ControlCamera(Camera &camera, bool key[], float camera_speed, float camera_rotate_speed) {
 	if(key['w'] || key['W']) {
 		camera.MoveForward(camera_speed);
 	}
@@ -20,35 +18,12 @@ void ControlCamera(Camera &camera, bool key[]) {
 	if(key['a'] || key['A']) {
 		camera.MoveRight(camera_speed);
 	}
-	if(key['l'] || key['L']) {
-		camera.Rotate(-8.0);
-	}
-	if(key['k'] || key['K']) {
-		camera.Rotate(8.0);
-	}
-}
-
-
-void ControlPlayer(Mesh *object, bool key[]) {
-	vec4 currentPos = object->GetPos();
-	if(key['w'] || key['W']) {
-		object->Move(currentPos.x, currentPos.y, currentPos.z += 1.0f);
-	}
-	if(key['s'] || key['S']) {
-		object->Move(currentPos.x, currentPos.y, currentPos.z -= 1.0f);
-	}
-	if(key['d'] || key['D']) {
-		object->Move(currentPos.x -= 1.0f, currentPos.y, currentPos.z);
-	}
-	if(key['a'] || key['A']) {
-		object->Move(currentPos.x += 1.0f, currentPos.y, currentPos.z);
-	}
-	if(key['l'] || key['L']) {
-		
-	}
-	if(key['k'] || key['K']) {
-		
-	}
+	// if(key['l'] || key['L']) {
+	// 	camera.Rotate(camera_rotate_speed);
+	// }
+	// if(key['k'] || key['K']) {
+	// 	camera.Rotate(camera_rotate_speed);
+	// }
 }
 
 void combineVec4Vectors(std::vector<vec4> &a, std::vector<vec4> b) {
