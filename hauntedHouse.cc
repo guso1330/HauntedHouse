@@ -134,14 +134,8 @@ extern "C" void display() {
 		camera.Update();
 	}
 	else if(CameraFPSMode) {
-		vec4 CameraPos = camera.GetPos();
-		Cube->Move(CameraPos.x, CameraPos.y - 1.0, CameraPos.z + 1.3);
-		// cout << "Camera pos: " << CameraPos.x << ", " << CameraPos.z << endl;
-		cout << "Camera Yaw" << camera.GetYaw() << endl;
-		ControlCamera(camera, key, camera_speed, camera_rotate_speed);
-		camera.Update();
+		Cube->UpdatePlayer(key);
 	}
-	
 	
 	glutSwapBuffers();
 }
@@ -165,7 +159,9 @@ extern "C" void keyDown(unsigned char k, int nx, int ny) {
 			CameraDebugMode = false;
 			CameraFPSMode = !CameraFPSMode;
 			cout << "CameraFPSMode set to " << CameraFPSMode << endl;
-			camera.SetPos(vec4(CubePos.x, CubePos.y + 1.0, CubePos.z - 1.3, CubePos.w));
+			// Cube->PrintModelView();
+			// camera.SetYaw(0);
+			// camera.SetPos(vec4(CubePos.x, CubePos.y + 1.0, CubePos.z - 1.3, CubePos.w));
 			glutSetCursor(GLUT_CURSOR_NONE);
 			glutWarpPointer(win_w/2, win_h/2);
 		default:
@@ -213,9 +209,13 @@ extern "C" void motion(int x, int y) {
 
 	if(CameraDebugMode || CameraFPSMode) {
 		int dx = x - win_w/2;
+		int dy = y - win_h/2;
 		// cout << "dx: " << dx << endl;
 		if(dx) { // get rotation in the x direction
 		    camera.RotateYaw(-camera_rotate_speed*dx);
+		}
+		if(dy) {
+			camera.RotatePitch(-camera_rotate_speed*dy);
 		}
 
 		glutWarpPointer(win_w/2, win_h/2);

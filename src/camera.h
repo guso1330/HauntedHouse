@@ -11,10 +11,12 @@ struct Camera {
 		void MoveForward(float amt);
 		void MoveRight(float amt);
 		void RotateYaw(float angle);
+		void RotatePitch(float angle);
 		void Rotate(float angle);
 		void Update();
 
 		inline void SetPos(vec4 npos) { pos = npos; }
+		inline void SetDir(vec4 ndir) { dir = ndir; }
 		inline void SetYaw(float angle) { yaw = angle; }
 		inline void SetPitch(float angle) { pitch = angle; }
 		inline void SetDirToForward() { dir = forward; }

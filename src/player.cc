@@ -51,13 +51,13 @@ void Player::Rotate(int axis, GLfloat theta) {
 	}
 }
 void Player::MoveZ(float amt, GLint time, GLint last_time) {
-	// pos += forward * amt * ((time - last_time)/15);
-	// ModelView = Translate(pos);
+	pos += forward * amt * ((time - last_time)/15);
+	ModelView = Translate(pos);
 }
 
 void Player::MoveX(float amt, GLint time, GLint last_time) {
-	// pos += cross(up, forward) * amt * ((time - last_time)/15);
-	// ModelView = Translate(pos);
+	pos += cross(up, forward) * amt * ((time - last_time)/15);
+	ModelView = Translate(pos);
 }
 
 void Player::MoveRotate(float angle)
@@ -73,24 +73,24 @@ void Player::MoveRotate(float angle)
 }
 
 void Player::UpdatePlayer(bool key[]) {
-	// GLint time = glutGet(GLUT_ELAPSED_TIME);
+	GLint time = glutGet(GLUT_ELAPSED_TIME);
 
-	// if(key['w'] || key['W']) {
-	// 	// cout << "key w" << endl;
-	// 	MoveZ(0.15, time, last_time);
-	// }
-	// if(key['s'] || key['S']) {
-	// 	// cout << "key s" << endl;
-	// 	MoveZ(-0.15, time, last_time);
-	// }
-	// if(key['d'] || key['D']) {
-	// 	// cout << "key d" << endl;
-	// 	MoveX(-0.1, time, last_time);
-	// }
-	// if(key['a'] || key['A']) {
-	// 	// cout << "key a" << endl;
-	// 	MoveX(0.1, time, last_time);
-	// }
+	if(key['w'] || key['W']) {
+		// cout << "key w" << endl;
+		MoveZ(0.15, time, last_time);
+	}
+	if(key['s'] || key['S']) {
+		// cout << "key s" << endl;
+		MoveZ(-0.15, time, last_time);
+	}
+	if(key['d'] || key['D']) {
+		// cout << "key d" << endl;
+		MoveX(-0.1, time, last_time);
+	}
+	if(key['a'] || key['A']) {
+		// cout << "key a" << endl;
+		MoveX(0.1, time, last_time);
+	}
 	// if(key['l'] || key['L']) {
 	// 	MoveRotate(-5.0);
 	// }
@@ -98,7 +98,7 @@ void Player::UpdatePlayer(bool key[]) {
 	// 	MoveRotate(5.0);		
 	// }
 	
-	// last_time = time;
+	last_time = time;
 }
 
 // Draw the mesh
@@ -115,4 +115,13 @@ void Player::DrawWireframe() {
 	glUniformMatrix4fv(matrix_loc, 1, GL_TRUE, ModelView);
 	for(int i = index; i < index+GetVertices().size(); i+=3)
 		glDrawArrays(GL_LINE_LOOP, i, 3);
+}
+
+void Player::PrintModelView() {
+	for(int i=0; i < 4; ++i) {
+		for (int j=0; j<4; ++j) {
+			cout << ModelView[i][j] <<  " ";
+		}
+		cout << endl;
+	}
 }

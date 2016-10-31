@@ -30,6 +30,9 @@ class Player : public Mesh {
 		inline GLuint GetIndex() const { return index; }
 		inline GLfloat GetSpeed() const { return speed; }
 
+		// Debug Functions
+		void PrintModelView();
+
 	private:
 		// GL Variables
 		GLuint index;

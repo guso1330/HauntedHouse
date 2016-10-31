@@ -40,6 +40,20 @@ void Camera::RotateYaw(float angle) // Incremental rotate
 	Update();
 }
 
+void Camera::RotatePitch(float angle) {
+	const float limit = 89.0 * M_PI / 180.0;
+
+	pitch += angle;
+
+	if(pitch < -limit)
+		pitch = -limit;
+
+	if(pitch > limit)
+		pitch = limit;
+
+	Update();
+}
+
 void Camera::Rotate(float angle) { // General rotate
 	static const vec4 UP(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -56,8 +70,4 @@ void Camera::Update() {
 
 	strafe_x = cos(yaw - M_PI_2);
 	strafe_z = sin(yaw - M_PI_2);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	LookAt(pos, pos+dir, up);
 }
