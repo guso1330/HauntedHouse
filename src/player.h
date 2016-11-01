@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "mesh.h"
+#include "camera.h"
 #include <iostream>
 
 class Player : public Mesh {
@@ -15,8 +16,9 @@ class Player : public Mesh {
 		void Rotate(int axis, GLfloat theta);
 		void MoveZ(float amt, GLint time, GLint last_time);
 		void MoveX(float amt, GLint time, GLint last_time);
-		void MoveRotate(float angle);
+		void RotateYaw(float angle);
 		void UpdatePlayer(bool key[]);
+		void Update();
 		void DrawSolid();
 		void DrawWireframe();
 
@@ -29,9 +31,11 @@ class Player : public Mesh {
 		inline vec4 GetPos() const { return pos; }
 		inline GLuint GetIndex() const { return index; }
 		inline GLfloat GetSpeed() const { return speed; }
+		inline Camera GetCamera() const { return MyCamera; }
 
 		// Debug Functions
 		void PrintModelView();
+		void PrintDir();
 
 	private:
 		// GL Variables
@@ -40,15 +44,20 @@ class Player : public Mesh {
 		GLint colorLoc;
 		mat4 ModelView;
 
+		Camera MyCamera;
+
 		// Object Attributes
 		GLfloat x, y, z;
 		vec4 pos;
+		vec4 dir; // The direction that the cube is facing
 		GLfloat r, g, b;
 		GLfloat speed;
 		GLint last_time;
 
 		vec4 forward;
 		vec4 up;
+
+		float yaw, pitch;
 };
 
 #endif // PLAYER_H

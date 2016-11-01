@@ -62,7 +62,7 @@ int win_h = 768;
 
 // Array for keyboard values
 bool key[255];
-
+float mouse_sensitivity = 0.4f;
 
 // Array of rotation angles (in degrees) for each coordinate axis
 enum {Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3};
@@ -85,10 +85,11 @@ mat4 projection;
 // Initialize the camera
 vec4 cam_start_pos = vec4(0.0f, 1.0f, 2.0f, 0.0f);
 Camera camera(cam_start_pos, 70.0f, (float)win_w/(float)win_h, 0.2f, 100.0f);
+Camera FPScam;
 float camera_speed = 0.5;
 float camera_rotate_speed = M_PI/180*0.2;
 bool CameraDebugMode = false;
-bool CameraFPSMode = false;
+bool CameraFPSMode = true;
 
 // void UpdateCamera();
 
@@ -123,18 +124,22 @@ extern "C" void display() {
 	Door->DrawWireframe();
 	Door->Move(0.0, 0.0, 94.0); // Door 6
 	Door->DrawWireframe();
-
-	// Send Camera data
-	projection = camera.GetViewProjection();
-	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 	
 	// set camera position to behind the cube
 	if(CameraDebugMode) {
 		ControlCamera(camera, key, camera_speed, camera_rotate_speed);
 		camera.Update();
+		camera.PrintDir();
+		// Send Camera data
+		projection = camera.GetViewProjection();
+		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 	}
 	else if(CameraFPSMode) {
 		Cube->UpdatePlayer(key);
+		Cube->Update();
+		FPScam.Update();
+		projection = Cube->GetCamera().GetViewProjection();
+		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 	}
 	
 	glutSwapBuffers();
@@ -207,17 +212,24 @@ extern "C" void motion(int x, int y) {
 		return;
 	}
 
-	if(CameraDebugMode || CameraFPSMode) {
-		int dx = x - win_w/2;
-		int dy = y - win_h/2;
-		// cout << "dx: " << dx << endl;
+	int dx = x - win_w/2;
+	int dy = y - win_h/2;
+
+	if(CameraDebugMode) {
 		if(dx) { // get rotation in the x direction
-		    camera.RotateYaw(-camera_rotate_speed*dx);
+			camera.RotateYaw((-camera_rotate_speed*dx) * mouse_sensitivity);
 		}
 		if(dy) {
-			camera.RotatePitch(-camera_rotate_speed*dy);
+			camera.RotatePitch((-camera_rotate_speed*dy) * mouse_sensitivity);
 		}
 
+		glutWarpPointer(win_w/2, win_h/2);
+
+		just_warped = true;
+	}
+	else if(CameraFPSMode) {
+		Cube->RotateYaw((-camera_rotate_speed*dx)*mouse_sensitivity);
+		FPScam.RotateYaw((-camera_rotate_speed*dx)*mouse_sensitivity);
 		glutWarpPointer(win_w/2, win_h/2);
 
 		just_warped = true;
@@ -308,6 +320,8 @@ void init() {
 
 	cout << "Verts in vertices: " << vertices.size() << endl;
 	cout << camera.GetPos() << " " << Cube->GetPos() << endl;
+
+	FPScam = Cube->GetCamera();
 
 	glBufferData(GL_ARRAY_BUFFER, (vertices.size())*sizeof(vec4), &vertices[0], GL_STATIC_DRAW);
 

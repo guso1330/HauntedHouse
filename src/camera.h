@@ -2,9 +2,11 @@
 #define CAMERA_H
 
 #include "Angel.h"
+#include <iostream>
 
 struct Camera {
 	public:
+		Camera();
 		Camera(const vec4 &pos, float fov, float aspect, float near, float far);
 
 		mat4 GetViewProjection() const;
@@ -23,6 +25,8 @@ struct Camera {
 		inline vec4 GetPos() { return pos; }
 		inline vec4 GetDir() { return dir; }
 		inline float GetYaw() { return yaw; }
+
+		void PrintDir();
 
 	private:
 		mat4 projection;

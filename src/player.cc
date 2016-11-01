@@ -6,8 +6,12 @@ Player::Player() {
 	r = g = b = 1.0;
 	speed = 0.00005;
 	pos = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	forward = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	forward = dir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
 	up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
+	yaw = pitch = 0.0f;
+
+	MyCamera.SetPos(pos + vec4(0.0, 1.0, 0.0, 0.0));
+
 	ModelView = mat4();
 	last_time=glutGet(GLUT_ELAPSED_TIME);
 }
@@ -20,8 +24,12 @@ Player::Player(const char *filename, GLuint nindex, GLint ncolorLoc, GLint nmatr
 	InitMesh(filename);
 	x = y = z = 0.0;
 	pos = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	forward = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	forward = dir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
 	up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
+	yaw = pitch = 0.0f;
+
+	MyCamera.SetPos(pos + vec4(0.0, 1.0, 0.0, 0.0));
+
 	r = g = b = 1.0;
 	speed = 0.00005;
 	ModelView = mat4();
@@ -32,11 +40,13 @@ void Player::Move(GLfloat nx, GLfloat ny, GLfloat nz) {
 	x = nx, y = ny, z = nz; // Set the new positions
 	pos = vec4(x, y, z, 0.0);
 	ModelView = Translate(pos);
+	Update();
 } // point form
 void Player::Move(vec4 npos) {
 	x = npos.x, y = npos.y, z = npos.z; // Set the new positions
 	pos = npos;
 	ModelView = Translate(pos);
+	Update();
 } // vector form
 
 void Player::Rotate(int axis, GLfloat theta) {
@@ -51,25 +61,36 @@ void Player::Rotate(int axis, GLfloat theta) {
 	}
 }
 void Player::MoveZ(float amt, GLint time, GLint last_time) {
-	pos += forward * amt * ((time - last_time)/15);
+	float lx = sin(yaw)*cos(pitch);
+	float ly = sin(pitch);
+	float lz = cos(yaw)*cos(pitch);
+
+	pos.x = pos.x + amt*lx;
+	pos.y = pos.y + amt*ly;
+	pos.z = pos.z + amt*lz;
+
+	cout << "POS: " << pos.x << " " << pos.y << " " << pos.z << endl;
+	pos += dir * amt * ((time - last_time)/15);
+	cout << "dir: " << dir.x << " " << dir.y << " " << dir.z << endl;
+	cout << "POS: " << pos.x << " " << pos.y << " " << pos.z << endl;
+
+
+	Update();
 	ModelView = Translate(pos);
 }
 
 void Player::MoveX(float amt, GLint time, GLint last_time) {
-	pos += cross(up, forward) * amt * ((time - last_time)/15);
-	ModelView = Translate(pos);
+	pos += cross(up, dir) * amt * ((time - last_time)/15);
+	Update();
 }
 
-void Player::MoveRotate(float angle)
+void Player::RotateYaw(float angle)
 {
-	// static const vec4 UP(0.0f, 1.0f, 0.0f, 0.0f);
+	yaw += angle;
 
-	// mat4 rotation = RotateY(angle);
+	cout << endl << "yaw: " << yaw << endl;
 
-	// forward = vec4(normalize(rotation * forward));
-	// up = vec4(normalize(rotation * up));
-
-	// ModelView = Translate(pos) * RotateY(angle);
+	Update();
 }
 
 void Player::UpdatePlayer(bool key[]) {
@@ -91,14 +112,19 @@ void Player::UpdatePlayer(bool key[]) {
 		// cout << "key a" << endl;
 		MoveX(0.1, time, last_time);
 	}
-	// if(key['l'] || key['L']) {
-	// 	MoveRotate(-5.0);
-	// }
-	// if(key['k'] || key['K']) {
-	// 	MoveRotate(5.0);		
-	// }
 	
 	last_time = time;
+}
+
+void Player::Update() {
+
+	dir.x = sin(yaw) * cos(pitch);
+	dir.y = 0.0;
+	dir.z = cos(yaw) * cos(pitch);
+
+	MyCamera.SetPos(pos);
+	MyCamera.SetDir(dir);
+	MyCamera.SetYaw(yaw);
 }
 
 // Draw the mesh
@@ -124,4 +150,8 @@ void Player::PrintModelView() {
 		}
 		cout << endl;
 	}
+}
+
+void Player::PrintDir() {
+	cout << "Dir: " << dir.x << ", " << dir.y << ", " << dir.z << endl;
 }

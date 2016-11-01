@@ -2,6 +2,14 @@
 // #include <math.h>
 #include <iostream>
 
+Camera::Camera() {
+	this->pos = pos;
+	this->forward = this->dir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	this->up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
+	this->projection = Perspective(70, 4.0/3.0, 0.2, 100.0);
+	yaw = pitch = 0.0;
+}
+
 Camera::Camera(const vec4 &pos, float fov, float aspect, float near, float far) {
 	this->pos = pos;
 	this->forward = this->dir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -68,6 +76,10 @@ void Camera::Update() {
 	dir.y = sin(pitch);
 	dir.z = cos(yaw) * cos(pitch);
 
-	strafe_x = cos(yaw - M_PI_2);
-	strafe_z = sin(yaw - M_PI_2);
+	// strafe_x = cos(yaw - M_PI_2);
+	// strafe_z = sin(yaw - M_PI_2);
+}
+
+void Camera::PrintDir() {
+	std::cout << "Dir: " << dir.x << ", " << dir.y << ", " << dir.z << std::endl;
 }

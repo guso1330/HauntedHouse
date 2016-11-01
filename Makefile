@@ -35,7 +35,7 @@ hauntedHouse: hauntedHouse.cc object.o player.o mesh.o camera.o objloader.o
 object.o: src/object.h src/object.cc mesh.o objloader.o
 	$(CC) src/object.cc -c $(OPTIONS)
 
-player.o: src/player.h src/player.cc mesh.o objloader.o
+player.o: src/player.h src/player.cc mesh.o objloader.o camera.o
 	$(CC) src/player.cc -c $(OPTIONS)
 
 mesh.o: src/mesh.h src/mesh.cc objloader.o
