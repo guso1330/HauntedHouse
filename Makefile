@@ -29,8 +29,11 @@ include /home/guso/Documents/cs4250/code-egs/Makefile.defs
 # make (i.e. with no arguments).
 all: hauntedHouse
 	
-hauntedHouse: hauntedHouse.cc object.o player.o mesh.o camera.o objloader.o
-	$(CC) hauntedHouse.cc $(InitShader) objloader.o camera.o mesh.o player.o object.o $(OPTIONS) $(LDLIBS) -o hauntedHouse
+hauntedHouse: hauntedHouse.cc object.o player.o mesh.o camera.o objloader.o utilities.o
+	$(CC) hauntedHouse.cc $(InitShader) objloader.o camera.o mesh.o player.o object.o utilities.o $(OPTIONS) $(LDLIBS) -o hauntedHouse
+
+utilities.o: src/utilities.h src/utilities.cc
+	$(CC) src/utilities.cc -c $(OPTIONS)
 
 object.o: src/object.h src/object.cc mesh.o objloader.o
 	$(CC) src/object.cc -c $(OPTIONS)

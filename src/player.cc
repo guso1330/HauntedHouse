@@ -69,12 +69,7 @@ void Player::MoveZ(float amt, GLint time, GLint last_time) {
 	pos.y = pos.y + amt*ly;
 	pos.z = pos.z + amt*lz;
 
-	cout << "POS: " << pos.x << " " << pos.y << " " << pos.z << endl;
 	pos += dir * amt * ((time - last_time)/15);
-	cout << "dir: " << dir.x << " " << dir.y << " " << dir.z << endl;
-	cout << "POS: " << pos.x << " " << pos.y << " " << pos.z << endl;
-
-
 	Update();
 	ModelView = Translate(pos);
 }
@@ -88,7 +83,21 @@ void Player::RotateYaw(float angle)
 {
 	yaw += angle;
 
-	cout << endl << "yaw: " << yaw << endl;
+	ModelView = Translate(pos) * RotateY(yaw);
+
+	Update();
+}
+
+void Player::RotatePitch(float angle) {
+	const float limit = 80 * M_PI / 180.0;
+
+	pitch += angle;
+
+	if(pitch < -limit)
+		pitch = -limit;
+
+	if(pitch > limit)
+		pitch = limit;
 
 	Update();
 }
@@ -98,11 +107,11 @@ void Player::UpdatePlayer(bool key[]) {
 
 	if(key['w'] || key['W']) {
 		// cout << "key w" << endl;
-		MoveZ(0.15, time, last_time);
+		MoveZ(0.12, time, last_time);
 	}
 	if(key['s'] || key['S']) {
 		// cout << "key s" << endl;
-		MoveZ(-0.15, time, last_time);
+		MoveZ(-0.12, time, last_time);
 	}
 	if(key['d'] || key['D']) {
 		// cout << "key d" << endl;
@@ -112,6 +121,8 @@ void Player::UpdatePlayer(bool key[]) {
 		// cout << "key a" << endl;
 		MoveX(0.1, time, last_time);
 	}
+
+	Update();
 	
 	last_time = time;
 }
@@ -122,7 +133,7 @@ void Player::Update() {
 	dir.y = 0.0;
 	dir.z = cos(yaw) * cos(pitch);
 
-	MyCamera.SetPos(pos);
+	MyCamera.SetPos(pos + vec4(0.0, 0.5, 0.0, 0.0));
 	MyCamera.SetDir(dir);
 	MyCamera.SetYaw(yaw);
 }

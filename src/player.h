@@ -17,6 +17,7 @@ class Player : public Mesh {
 		void MoveZ(float amt, GLint time, GLint last_time);
 		void MoveX(float amt, GLint time, GLint last_time);
 		void RotateYaw(float angle);
+		void RotatePitch(float angle);
 		void UpdatePlayer(bool key[]);
 		void Update();
 		void DrawSolid();
@@ -26,6 +27,7 @@ class Player : public Mesh {
 		inline void SetSpeed(GLfloat nspeed) { speed = nspeed; }
 		inline void SetModelView(mat4 m) { ModelView = m; };
 		inline void SetColor(GLfloat nr, GLfloat ng, GLfloat nb) { r = nr; g = ng; b = nb; }
+		inline void SetPos(vec4 npos) { pos = npos; }
 
 		// Get Functions
 		inline vec4 GetPos() const { return pos; }

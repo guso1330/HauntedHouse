@@ -75,9 +75,6 @@ void Camera::Update() {
 	dir.x = sin(yaw) * cos(pitch);
 	dir.y = sin(pitch);
 	dir.z = cos(yaw) * cos(pitch);
-
-	// strafe_x = cos(yaw - M_PI_2);
-	// strafe_z = sin(yaw - M_PI_2);
 }
 
 void Camera::PrintDir() {

@@ -17,11 +17,10 @@
 //		- There's also a guy name Jamie King who does good opengl tutorials
 // 
 //	- Reshape function (see camera example, also reset projection matrix)
-//	- Implement better player rotation
 //	- Implement a transform class that will handle all rotation of meshes
-//	- Transfer FPS controls to player, then place the camera where it should be to achieve
-//	  achieve 1st and 3rd person
-//
+//	- Document as much code as possible
+//	- Add game instructions at the beginning
+//  - Add ghosts and animate them
 
 #include <iostream>
 #include "Angel.h"
@@ -69,10 +68,11 @@ enum {Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3};
 int      Axis = Xaxis;
 GLfloat  Theta[NumAxes] = {0.0, 0.0, 0.0};
 
+// Array of doors to check
+bool DoorsClosed[6] = {true, true, true, true, true, true};
+
 // Global storage devices
 vector<vec4> vertices;
-vector<vec2> uvs;
-vector<vec4> normals;
 
 GLuint program;
 GLuint loc;
@@ -100,11 +100,11 @@ extern "C" void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	
 	Cube->DrawSolid();
+
 	Key->DrawSolid();
 	// Draw the Level
-	Level->DrawWireframe();
+	Level->DrawSolid();
 	LevelFloor->DrawSolid();
 
 	// Drawing the ghost
@@ -112,31 +112,20 @@ extern "C" void display() {
 	Ghost->DrawWireframe();
 
 	// Drawing all doors
-	Door->Move(0.0, 0.0, 20.0);
-	Door->DrawWireframe(); // Door 1
-	Door->Move(7.0, 0.0, 36.0);
-	Door->DrawWireframe(); // Door 2
-	Door->Move(-11.0, 0.0, 36.0); // Door 3
-	Door->DrawWireframe();
-	Door->Move(-11.0, 0.0, 46.0); // Door 4
-	Door->DrawWireframe();
-	Door->Move(-11.0, 0.0, 70.0); // Door 5
-	Door->DrawWireframe();
-	Door->Move(0.0, 0.0, 94.0); // Door 6
-	Door->DrawWireframe();
+	DrawDoors(Door, DoorsClosed);
 	
 	// set camera position to behind the cube
 	if(CameraDebugMode) {
 		ControlCamera(camera, key, camera_speed, camera_rotate_speed);
 		camera.Update();
-		camera.PrintDir();
+		// camera.PrintDir();
 		// Send Camera data
 		projection = camera.GetViewProjection();
 		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 	}
 	else if(CameraFPSMode) {
+		CheckCollisions(Cube, DoorsClosed);
 		Cube->UpdatePlayer(key);
-		Cube->Update();
 		FPScam.Update();
 		projection = Cube->GetCamera().GetViewProjection();
 		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
@@ -164,11 +153,10 @@ extern "C" void keyDown(unsigned char k, int nx, int ny) {
 			CameraDebugMode = false;
 			CameraFPSMode = !CameraFPSMode;
 			cout << "CameraFPSMode set to " << CameraFPSMode << endl;
-			// Cube->PrintModelView();
-			// camera.SetYaw(0);
-			// camera.SetPos(vec4(CubePos.x, CubePos.y + 1.0, CubePos.z - 1.3, CubePos.w));
 			glutSetCursor(GLUT_CURSOR_NONE);
 			glutWarpPointer(win_w/2, win_h/2);
+		case 'e':
+			CheckToOpenDoors(Cube, DoorsClosed);
 		default:
 			// Anything else.
 			break;
@@ -196,8 +184,7 @@ extern "C" void mouse(int button, int state, int x, int y) {
 
 extern "C" void idle() {
 
-	// Cube->Update();
-	// Pipe->Update();
+	Door->Update();
 
 	glutPostRedisplay();
 }
@@ -228,8 +215,11 @@ extern "C" void motion(int x, int y) {
 		just_warped = true;
 	}
 	else if(CameraFPSMode) {
-		Cube->RotateYaw((-camera_rotate_speed*dx)*mouse_sensitivity);
-		FPScam.RotateYaw((-camera_rotate_speed*dx)*mouse_sensitivity);
+		if(dx) {
+			Cube->RotateYaw((-camera_rotate_speed*dx)*mouse_sensitivity);
+			FPScam.RotateYaw((-camera_rotate_speed*dx)*mouse_sensitivity);
+		}
+
 		glutWarpPointer(win_w/2, win_h/2);
 
 		just_warped = true;
