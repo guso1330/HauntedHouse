@@ -1,3 +1,21 @@
+//******************************************************************* 
+//                                                                    
+//  Class:     Object - contains all of the static or computer
+//						controlled entities for the game.
+//                                                                     
+//  Author:      Gus Oberdick
+//  Email:       go125412@ohio.edu
+//                                                                    
+//                                                                    
+//  Description: This class implements all of the movement, updating,
+//				 and drawing of static or computer controlled entities.
+// 				 Each entity also keeps track of it's own 2d maximally
+//				 sized rectangle to detect for collision.
+//                                                                    
+//  Date:        October 31, 2016 3:41:00pm
+//                                                                    
+//*******************************************************************
+
 #ifndef OBJECT_H
 #define OBJECT_H
 

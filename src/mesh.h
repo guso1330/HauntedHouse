@@ -28,7 +28,7 @@ class Mesh {
 
 		// Manipulator Functions
 		void InitMesh(const char *filename);
-		void Get2dBoundingBox();
+		void Get2dBoundingBox(); // This function builds a 2d bounding box based off the min and max (x and z) values for the object
 
 		// Accessor functions
 		inline vector<vec4> GetVertices() const { return Vertices; }

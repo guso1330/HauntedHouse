@@ -1,3 +1,18 @@
+//******************************************************************* 
+//                                                                    
+//  File:     objloader
+//                                                                     
+//  Author:      Gus Oberdick
+//  Email:       go125412@ohio.edu
+//                                                                    
+//                                                                    
+//  Description: This class holds functions that can read in .obj files.
+//				 The imported meshes must be triangulated.
+//                                                                    
+//  Date:        October 31, 2016 3:41:00pm
+//                                                                    
+//*******************************************************************
+
 #ifndef OBJLOADER_H
 #define OBJLOADER_H
 

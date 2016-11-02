@@ -1,3 +1,19 @@
+//******************************************************************* 
+//                                                                    
+//  Class:     Camera
+//                                                                     
+//  Author:      Gus Oberdick
+//  Email:       go125412@ohio.edu
+//                                                                    
+//                                                                    
+//  Description: This class is a camera class that can has be manipulated
+//				 or even moved around the scene with controls.
+//			     It implements perspective viewing.
+//                                                                    
+//  Date:        October 31, 2016 3:41:00pm
+//                                                                    
+//*******************************************************************
+
 #ifndef CAMERA_H
 #define CAMERA_H
 

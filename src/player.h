@@ -1,3 +1,19 @@
+//******************************************************************* 
+//                                                                    
+//  Class:     Player - is the user controlled entity
+//                                                                     
+//  Author:      Gus Oberdick
+//  Email:       go125412@ohio.edu
+//                                                                    
+//                                                                    
+//  Description: This class controls all user controlled entities.
+// 				 It allows for controlled movement. It also implements
+//				 it's own FPS style camera.
+//                                                                    
+//  Date:        October 31, 2016 3:41:00pm
+//                                                                    
+//*******************************************************************
+
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -13,15 +29,15 @@ class Player : public Mesh {
 
 		void Move(GLfloat nx, GLfloat ny, GLfloat nz); // point form
 		void Move(vec4 npos); // vector form
-		void Rotate(int axis, GLfloat theta);
-		void MoveZ(float amt, GLint time, GLint last_time);
-		void MoveX(float amt, GLint time, GLint last_time);
-		void RotateYaw(float angle);
-		void RotatePitch(float angle);
-		void UpdatePlayer(bool key[]);
-		void Update();
-		void DrawSolid();
-		void DrawWireframe();
+		void Rotate(int axis, GLfloat theta); // Rotates the player
+		void MoveZ(float amt, GLint time, GLint last_time); // Moves the player incrementally so that it can be updated
+		void MoveX(float amt, GLint time, GLint last_time); // Moves the player incrementally so that it can be updated
+		void RotateYaw(float angle); // doens't work properly
+		void RotatePitch(float angle); // doesn't work properly
+		void UpdatePlayer(bool key[]); // Updates the player based on defined controls
+		void Update(); // Updates player position and direction
+		void DrawSolid(); // Draws the shape in solid mode
+		void DrawWireframe(); // draws the shape in wireframe mode
 
 		// Set Functions
 		inline void SetSpeed(GLfloat nspeed) { speed = nspeed; }
