@@ -16,11 +16,8 @@
 //	- Watch thebennybox - Intro to Modern OpenGL Tutorial #6: Camera and Perspective	
 //		- There's also a guy name Jamie King who does good opengl tutorials
 // 
-//	- Reshape function (see camera example, also reset projection matrix)
 //	- Implement a transform class that will handle all rotation of meshes
-//	- Document as much code as possible
 //	- Add game instructions at the beginning
-//  - Add ghosts and animate them
 
 #include <iostream>
 #include "Angel.h"
@@ -80,6 +77,7 @@ bool PLAYERALIVE = true;
 bool HAVEKEY = false;
 bool DOOR2LOCKED = true;
 bool GHOSTSFLYING = false;
+bool DOOR3OPEN = false;
 
 // Global storage devices
 vector<vec4> vertices;
@@ -113,7 +111,7 @@ extern "C" void display() {
 	Cube->DrawSolid();
 
 	// Draw the Level
-	Level->DrawWireframe();
+	Level->DrawSolid();
 	LevelFloor->DrawSolid();
 
 	// Draw the key for the first door
@@ -137,17 +135,33 @@ extern "C" void display() {
 		}
 	}
 	else if(INROOM == 3 || HAVEKEY) {
-		// cout << INROOM << endl;
 		// GHOSTSFLYING = true;
 		CheckCollisionsWithWalls(Cube, Doors, INROOM, GHOSTSFLYING);
 		if(GHOSTSFLYING) {
 			Ghost1->DrawWireframe();
+			Ghost1->SetSpeed(0.003);
 			Ghost2->DrawWireframe();
+			Ghost2->SetSpeed(0.003);
 			Ghost3->DrawWireframe();
-			PLAYERALIVE = CheckPlayerCollisions(Cube, Ghost1);
-			PLAYERALIVE = CheckPlayerCollisions(Cube, Ghost2);
-			PLAYERALIVE = CheckPlayerCollisions(Cube, Ghost3);
+			Ghost3->SetSpeed(0.003);
+			Ghost1->ChangeGoal(4.0, 1.0, 46.0);
+			Ghost2->ChangeGoal(4.0, 1.0, 52.0);
+			Ghost3->ChangeGoal(4.0, 1.0, 58.0);
+			if((CheckPlayerCollisions(Cube, Ghost1)) || (CheckPlayerCollisions(Cube, Ghost2)) || (CheckPlayerCollisions(Cube, Ghost3))) {
+				cout << "YOU LOOSSSSEEEEEE" << endl;
+				exit(0);
+			}
+			else if (Ghost1->GetPos() == Ghost1->GetGoal() && Ghost2->GetPos() == Ghost2->GetGoal() && Ghost3->GetPos() == Ghost3->GetGoal()) {
+				// cout << "Door 3 unlocked" << endl;
+				GHOSTSFLYING = false;
+				Doors[2] = false;
+				HAVEKEY = false;
+				INROOM = 4;
+			}
 		}
+	}
+	else if(INROOM == 4) {
+		CheckCollisionsWithWalls(Cube, Doors, INROOM, GHOSTSFLYING);
 	}
 
 	// Handle the different camera modes
@@ -163,7 +177,7 @@ extern "C" void display() {
 	}
 	else if(CameraFPSMode) {
 		Cube->UpdatePlayer(key);
-		cout << "x, z: " << Cube->GetPos().x << ", " << Cube->GetPos().z << endl;
+		// cout << "x, z: " << Cube->GetPos().x << ", " << Cube->GetPos().z << endl;
 		FPScam.Update();
 		projection = Cube->GetCamera().GetViewProjection();
 		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
@@ -223,6 +237,9 @@ extern "C" void mouse(int button, int state, int x, int y) {
 extern "C" void idle() {
 
 	Door->Update();
+	Ghost1->Update();
+	Ghost2->Update();
+	Ghost3->Update();
 
 	glutPostRedisplay();
 }
@@ -313,53 +330,56 @@ void init() {
 	//
 	// Build All Objects In Scene
 	//
-	// cout << "Cube" << endl;
+	// build the player cube
 	Cube = new Player("models/cube.obj", NUMVERTICES, colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Cube->GetVertices());
 	Cube->Move(0.0, 0.5, 5.0);
 	Cube->SetColor(1.0, 0.0, 0.0);
 
-	// cout << "Pipe" << endl;
-	Pipe = new Object("models/cube.obj", incrementIndex(NUMVERTICES, Cube->GetVerticesSize()), colorLoc, matrix_loc);
-	combineVec4Vectors(vertices, Pipe->GetVertices());
-	Pipe->Move(0.0, 0.5, 26.0);
-	Pipe->SetColor(0.0, 1.0, 0.0);
+	
+	// Pipe = new Object("models/cube.obj", incrementIndex(NUMVERTICES, Cube->GetVerticesSize()), colorLoc, matrix_loc);
+	// combineVec4Vectors(vertices, Pipe->GetVertices());
+	// Pipe->Move(0.0, 0.5, 26.0);
+	// Pipe->SetColor(0.0, 1.0, 0.0);
 
-	// cout << "Level" << endl;
-	Level = new Object("models/level2.obj", incrementIndex(NUMVERTICES, Pipe->GetVerticesSize()), colorLoc, matrix_loc);
+	// build the level walls
+	Level = new Object("models/level2.obj", incrementIndex(NUMVERTICES, Cube->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Level->GetVertices());
 	Level->SetColor((75.0/255.0), (18.0/255.0), (18.0/255.0));
 
-	// cout << "LevelFloor" << endl;
+	// build the level's floor
 	LevelFloor = new Object("models/level_floor2.obj", incrementIndex(NUMVERTICES, Level->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, LevelFloor->GetVertices());
 	LevelFloor->SetColor((22.0/255.0), (55.0/255.0), (21.0/255.0));
 	
-	// cout << "Door" << endl;
+	// build the door object
 	Door = new Object("models/door.obj", incrementIndex(NUMVERTICES, LevelFloor->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Door->GetVertices());
 	Door->Rotate(2, 180);
 	Door->SetColor((114.0/255.0), (48.0/255.0), (24.0/255.0));
 
-	// cout << "Key" << endl;
+	// build the key object
 	Key  = new Object("models/key.obj", incrementIndex(NUMVERTICES, Door->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Key->GetVertices());
 	Key->Move(14.0, 0.5, 38.0);
 	Key->SetColor(1.0, 9.0, 0.0);
 
-	// cout << "Ghost" << endl;
+	// Build the ghosts
 	Ghost1 = new Object("models/ghost.obj", incrementIndex(NUMVERTICES, Key->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Ghost1->GetVertices());
 	Ghost2 = new Object("models/ghost.obj", incrementIndex(NUMVERTICES, Ghost1->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Ghost2->GetVertices());
 	Ghost3 = new Object("models/ghost.obj", incrementIndex(NUMVERTICES, Ghost2->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Ghost3->GetVertices());
-	Ghost1->Move(-18.0, 1.0, 46.0);
-	Ghost2->Move(-18.0, 1.0, 52.0);
-	Ghost3->Move(-18.0, 1.0, 58.0);
+	Ghost1->Move(-22.0, 1.0, 46.0);
+	Ghost2->Move(-25.0, 1.0, 52.0);
+	Ghost3->Move(-19.0, 1.0, 56.0);
 
-	cout << "Verts in vertices: " << vertices.size() << endl;
-	cout << camera.GetPos() << " " << Cube->GetPos() << endl;
+	cout << "Welcome to my 'Haunted House'" << endl << endl;
+	cout << "W, A, S, D to move and mouse to look around. E to open doors." << endl;
+	cout << "T to switch to the debug camera, and Y to switch back to player view" << endl << endl;
+	cout << "Press ESC to quit." << endl;
+	cout << "Enjoy!" << endl;
 
 	FPScam = Cube->GetCamera();
 

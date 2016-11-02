@@ -33,13 +33,18 @@ void Object::Move(GLfloat nx, GLfloat ny, GLfloat nz) {
 	goal_z = z;
 	ModelView = Translate(nx, ny, nz);
 } // point form
+
+void Object::MoveOnUpdate(GLfloat nx, GLfloat ny, GLfloat nz) {
+	x = nx;
+	y = ny;
+	z = nz;
+	ModelView = Translate(nx, ny, nz);
+} // point form
+
 void Object::Move(vec4 npos) {
 	x = npos.x;
 	y = npos.y;
 	z = npos.z;
-	goal_x = x;
-	goal_y = y;
-	goal_z = z;
 	ModelView = Translate(x, y, z);
 } // vector form
 
@@ -54,20 +59,29 @@ void Object::Rotate(int axis, GLfloat theta) {
 		ModelView = RotateZ(theta);
 	}
 }
+
+void Object::ChangeGoal(GLfloat nx, GLfloat ny, GLfloat nz) {
+	goal_x = nx; goal_y = ny; goal_z = nz;
+}
+void Object::ChangeGoal(vec4 npos) {
+	goal_x = npos.x; goal_y = npos.y; goal_z = npos.z;
+}
+
 void Object::Update() {
+
 	GLint time = glutGet(GLUT_ELAPSED_TIME);
 	const GLfloat max_speed = speed; // pixels/msec max speed
 	vec4 dir = vec4(goal_x - x, goal_y - y, goal_z - z, 0.0);
 	if (length(dir) > 0.2) {
-		dir = (time - last_time)*max_speed*normalize(dir);
+		dir = ((time - last_time))*max_speed*normalize(dir);
 		// Update location
 		x += dir.x; y += dir.y; z += dir.z;
-		Move(x, y, z);;
+		MoveOnUpdate(x, y, z);
 	} else {
 		x = goal_x;
 		y = goal_y;
 		z = goal_z;
-		ModelView = Translate(vec3(x, y, z));
+		// ModelView = Translate(vec3(x, y, z));
 	}
 	
 	last_time = time;

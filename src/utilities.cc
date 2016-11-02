@@ -125,13 +125,24 @@ void CheckCollisionsWithWalls(Player* &player, bool (&doorsclosed)[3], int &INRO
 		if(pos.x > -0.2) {
 			player->SetPos(vec4(-0.5, pos.y, pos.z, pos.w));
 		}
-		if(pos.z >= 60.0) {
+		if(pos.z >= 60.0 && INROOM != 3) {
 			player->SetPos(vec4(pos.x, pos.y, 59.5, pos.w)); // top wall of room 2
 		}
 	}
+	if(pos.z >= 60.0) {
+		// cout << "Reclose the opened door" << endl;
+		// doorsclosed[2] = true;
+		if(pos.x < -4.0) {
+			player->SetPos(vec4(-3.8, pos.y, pos.z, pos.w));
+		}
+	}
+	if(pos.z >= 125) {
+		cout << "YOU WON!!!!" << endl;
+		exit(0);
+	}
 }
 
-void DrawDoors(Object* &door, bool doorsclosed[3], bool HAVEKEY, int INROOM) {
+void DrawDoors(Object* &door, bool (&doorsclosed)[3], bool HAVEKEY, int INROOM) {
 	if(doorsclosed[0]) {
 		door->Move(0.0, 0.0, 20.0);
 		door->SetColor((114.0/255.0), (48.0/255.0), (24.0/255.0));
@@ -163,9 +174,12 @@ void CheckToOpenDoors(Player* &player, bool (&doorsclosed)[3], bool HAVEKEY, int
 		doorsclosed[1] = false;
 	}
 	// if(pos.x <= -9.0 && pos.x >= -13.0 && pos.z >= 35.0 && doorsclosed[2]) { // Open door 3 if you're close enough
-	// 	cout << "Door 3 unclocked" << endl;
+	// 	cout << "Door 3 unlocked" << endl;
 	// 	doorsclosed[2] = false;
 	// }
+	if(doorsclosed[2] == false) {
+		// cout << "Door 3 is unlocked" << endl;
+	}
 }
 
 int incrementIndex(int &total, int incr) {

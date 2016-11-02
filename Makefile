@@ -52,4 +52,4 @@ objloader.o: src/objloader.h src/objloader.cc
 
 # pattern to clean the directory
 clean: 
-	rm -f hauntedHouse objloader.o
+	rm -f hauntedHouse objloader.o camera.o mesh.o player.o object.o utilities.o

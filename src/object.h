@@ -10,10 +10,11 @@ class Object : public Mesh {
 		Object(const char *filename, GLuint nindex, GLint ncolorLoc, GLint nmatrix_loc);
 
 		void Move(GLfloat nx, GLfloat ny, GLfloat nz); // point form
+		void MoveOnUpdate(GLfloat nx, GLfloat ny, GLfloat nz); // point form
 		void Move(vec4 where); // vector form
 		void Rotate(int axis, GLfloat theta);
 		void ChangeGoal(GLfloat nx, GLfloat ny, GLfloat nz);
-		void ChangeGoal(vec3 npos);
+		void ChangeGoal(vec4 npos);
 		void Update();
 		void DrawSolid();
 		void DrawWireframe();
@@ -25,7 +26,8 @@ class Object : public Mesh {
 		inline void SetColorAlpha(GLfloat nr, GLfloat ng, GLfloat nb, GLfloat na) { r = nr; g = ng; b = nb; a = na; }
 
 		// Get Functions
-		inline vec3 GetPos() const { return vec3(x, y, z); }
+		inline vec4 GetPos() const { return vec4(x, y, z, 0.0); }
+		inline vec4 GetGoal() const { return vec4(goal_x, goal_y, goal_z, 0.0); }
 		inline GLuint GetIndex() const { return index; }
 		inline GLfloat GetSpeed() const { return speed; }
 

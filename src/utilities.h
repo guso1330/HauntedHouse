@@ -16,7 +16,7 @@ bool rangeInterset(float amin, float amax, float bmin, float bmax);
 
 void CheckCollisionsWithWalls(Player* &player, bool (&doorsclosed)[3], int &INROOM, bool &GHOSTSFLYING);
 
-void DrawDoors(Object* &door, bool doorsclosed[3], bool HAVEKEY, int INROOM);
+void DrawDoors(Object* &door, bool (&doorsclosed)[3], bool HAVEKEY, int INROOM);
 void CheckToOpenDoors(Player* &player, bool (&doorsclosed)[3], bool HAVEKEY, int &INROOM);
 
 int incrementIndex(int &total, int incr);
