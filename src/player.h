@@ -34,10 +34,15 @@ class Player : public Mesh {
 		inline GLuint GetIndex() const { return index; }
 		inline GLfloat GetSpeed() const { return speed; }
 		inline Camera GetCamera() const { return MyCamera; }
+		inline vec4 GetDir() const { return dir; }
+		inline vec4 GetKeyDir() const { return keydir; }
 
 		// Debug Functions
 		void PrintModelView();
 		void PrintDir();
+		void PrintPos() {
+			std::cout << pos.x << ", " << pos.z << endl;
+		}
 
 	private:
 		// GL Variables
@@ -52,6 +57,7 @@ class Player : public Mesh {
 		GLfloat x, y, z;
 		vec4 pos;
 		vec4 dir; // The direction that the cube is facing
+		vec4 keydir;
 		GLfloat r, g, b;
 		GLfloat speed;
 		GLint last_time;

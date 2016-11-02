@@ -6,7 +6,7 @@ Player::Player() {
 	r = g = b = 1.0;
 	speed = 0.00005;
 	pos = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	forward = dir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	forward = dir = keydir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
 	up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
 	yaw = pitch = 0.0f;
 
@@ -24,7 +24,7 @@ Player::Player(const char *filename, GLuint nindex, GLint ncolorLoc, GLint nmatr
 	InitMesh(filename);
 	x = y = z = 0.0;
 	pos = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	forward = dir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	forward = dir = keydir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
 	up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
 	yaw = pitch = 0.0f;
 
@@ -76,6 +76,7 @@ void Player::MoveZ(float amt, GLint time, GLint last_time) {
 
 void Player::MoveX(float amt, GLint time, GLint last_time) {
 	pos += cross(up, dir) * amt * ((time - last_time)/15);
+	ModelView = Translate(pos);
 	Update();
 }
 
@@ -108,18 +109,22 @@ void Player::UpdatePlayer(bool key[]) {
 	if(key['w'] || key['W']) {
 		// cout << "key w" << endl;
 		MoveZ(0.12, time, last_time);
+		keydir = vec4(0.0, 0.0, 1.0, 0.0);
 	}
 	if(key['s'] || key['S']) {
 		// cout << "key s" << endl;
 		MoveZ(-0.12, time, last_time);
+		keydir = vec4(0.0, 0.0, -1.0, 0.0);
 	}
 	if(key['d'] || key['D']) {
 		// cout << "key d" << endl;
 		MoveX(-0.1, time, last_time);
+		keydir = vec4(-1.0, 0.0, 0.0, 0.0);
 	}
 	if(key['a'] || key['A']) {
 		// cout << "key a" << endl;
 		MoveX(0.1, time, last_time);
+		keydir = vec4(1.0, 0.0, 1.0, 0.0);
 	}
 
 	Update();
@@ -133,7 +138,7 @@ void Player::Update() {
 	dir.y = 0.0;
 	dir.z = cos(yaw) * cos(pitch);
 
-	MyCamera.SetPos(pos + vec4(0.0, 0.5, 0.0, 0.0));
+	MyCamera.SetPos(pos + vec4(0.0, 0.5, -0.5, 0.0));
 	MyCamera.SetDir(dir);
 	MyCamera.SetYaw(yaw);
 }

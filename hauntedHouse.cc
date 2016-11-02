@@ -53,7 +53,9 @@ Object *Level;
 Object *LevelFloor;
 Object *Door;
 Object *Key;
-Object *Ghost;
+Object *Ghost1;
+Object *Ghost2;
+Object *Ghost3;
 
 // Window dimension constants
 int win_w = 1024;
@@ -68,11 +70,20 @@ enum {Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3};
 int      Axis = Xaxis;
 GLfloat  Theta[NumAxes] = {0.0, 0.0, 0.0};
 
+//
+//	Game State Variables
+//
 // Array of doors to check
-bool DoorsClosed[6] = {true, true, true, true, true, true};
+bool Doors[3] = {true, true, true};
+int INROOM = 1;
+bool PLAYERALIVE = true;
+bool HAVEKEY = false;
+bool DOOR2LOCKED = true;
+bool GHOSTSFLYING = false;
 
 // Global storage devices
 vector<vec4> vertices;
+int NUMVERTICES = 0;
 
 GLuint program;
 GLuint loc;
@@ -91,8 +102,6 @@ float camera_rotate_speed = M_PI/180*0.2;
 bool CameraDebugMode = false;
 bool CameraFPSMode = true;
 
-// void UpdateCamera();
-
 //
 // CALLBACKS
 //
@@ -100,20 +109,49 @@ extern "C" void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Draw the Player Cube
 	Cube->DrawSolid();
 
-	Key->DrawSolid();
 	// Draw the Level
-	Level->DrawSolid();
+	Level->DrawWireframe();
 	LevelFloor->DrawSolid();
 
-	// Drawing the ghost
-	Ghost->Move(-11.0, 0.5, 67.0);
-	Ghost->DrawWireframe();
+	// Draw the key for the first door
+	if(HAVEKEY == false)
+		Key->DrawSolid();
 
 	// Drawing all doors
-	DrawDoors(Door, DoorsClosed);
-	
+	DrawDoors(Door, Doors, HAVEKEY, INROOM);
+
+	//
+	// Check the game states
+	//
+	if(INROOM == 1) {
+		CheckCollisionsWithWalls(Cube, Doors, INROOM, GHOSTSFLYING);
+	}
+	else if(INROOM == 2 && !HAVEKEY) {
+		CheckCollisionsWithWalls(Cube, Doors, INROOM, GHOSTSFLYING);
+		HAVEKEY = CheckPlayerCollisions(Cube, Key);
+		if(HAVEKEY == true) {
+			cout << "You collected the key!" << endl;
+		}
+	}
+	else if(INROOM == 3 || HAVEKEY) {
+		// cout << INROOM << endl;
+		// GHOSTSFLYING = true;
+		CheckCollisionsWithWalls(Cube, Doors, INROOM, GHOSTSFLYING);
+		if(GHOSTSFLYING) {
+			Ghost1->DrawWireframe();
+			Ghost2->DrawWireframe();
+			Ghost3->DrawWireframe();
+			PLAYERALIVE = CheckPlayerCollisions(Cube, Ghost1);
+			PLAYERALIVE = CheckPlayerCollisions(Cube, Ghost2);
+			PLAYERALIVE = CheckPlayerCollisions(Cube, Ghost3);
+		}
+	}
+
+	// Handle the different camera modes
+	//
 	// set camera position to behind the cube
 	if(CameraDebugMode) {
 		ControlCamera(camera, key, camera_speed, camera_rotate_speed);
@@ -124,8 +162,8 @@ extern "C" void display() {
 		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
 	}
 	else if(CameraFPSMode) {
-		CheckCollisions(Cube, DoorsClosed);
 		Cube->UpdatePlayer(key);
+		cout << "x, z: " << Cube->GetPos().x << ", " << Cube->GetPos().z << endl;
 		FPScam.Update();
 		projection = Cube->GetCamera().GetViewProjection();
 		glUniformMatrix4fv(projection_loc, 1, GL_TRUE, projection);
@@ -156,7 +194,7 @@ extern "C" void keyDown(unsigned char k, int nx, int ny) {
 			glutSetCursor(GLUT_CURSOR_NONE);
 			glutWarpPointer(win_w/2, win_h/2);
 		case 'e':
-			CheckToOpenDoors(Cube, DoorsClosed);
+			CheckToOpenDoors(Cube, Doors, HAVEKEY, INROOM);
 		default:
 			// Anything else.
 			break;
@@ -275,38 +313,50 @@ void init() {
 	//
 	// Build All Objects In Scene
 	//
-	Cube = new Player("models/cube.obj", 0, colorLoc, matrix_loc);
+	// cout << "Cube" << endl;
+	Cube = new Player("models/cube.obj", NUMVERTICES, colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Cube->GetVertices());
 	Cube->Move(0.0, 0.5, 5.0);
 	Cube->SetColor(1.0, 0.0, 0.0);
 
-	Pipe = new Object("models/pipe.obj", Cube->GetVerticesSize(), colorLoc, matrix_loc);
+	// cout << "Pipe" << endl;
+	Pipe = new Object("models/cube.obj", incrementIndex(NUMVERTICES, Cube->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Pipe->GetVertices());
-	Pipe->Move(0.0, 2.0, 0.0);
+	Pipe->Move(0.0, 0.5, 26.0);
 	Pipe->SetColor(0.0, 1.0, 0.0);
 
-	Level = new Object("models/level_walls.obj", Cube->GetVerticesSize() + Pipe->GetVerticesSize(), colorLoc, matrix_loc);
+	// cout << "Level" << endl;
+	Level = new Object("models/level2.obj", incrementIndex(NUMVERTICES, Pipe->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Level->GetVertices());
 	Level->SetColor((75.0/255.0), (18.0/255.0), (18.0/255.0));
-	Level->Rotate(2, 180);
 
-	LevelFloor = new Object("models/level_floor.obj", Cube->GetVerticesSize() + Pipe->GetVerticesSize() + Level->GetVerticesSize(), colorLoc, matrix_loc);
+	// cout << "LevelFloor" << endl;
+	LevelFloor = new Object("models/level_floor2.obj", incrementIndex(NUMVERTICES, Level->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, LevelFloor->GetVertices());
 	LevelFloor->SetColor((22.0/255.0), (55.0/255.0), (21.0/255.0));
-	LevelFloor->Rotate(2, 180);
 	
-	Door = new Object("models/door.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize()+Level->GetVerticesSize()+LevelFloor->GetVerticesSize(), colorLoc, matrix_loc);
+	// cout << "Door" << endl;
+	Door = new Object("models/door.obj", incrementIndex(NUMVERTICES, LevelFloor->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Door->GetVertices());
 	Door->Rotate(2, 180);
 	Door->SetColor((114.0/255.0), (48.0/255.0), (24.0/255.0));
 
-	Key  = new Object("models/key.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize()+Level->GetVerticesSize()+LevelFloor->GetVerticesSize()+Door->GetVerticesSize(), colorLoc, matrix_loc);
+	// cout << "Key" << endl;
+	Key  = new Object("models/key.obj", incrementIndex(NUMVERTICES, Door->GetVerticesSize()), colorLoc, matrix_loc);
 	combineVec4Vectors(vertices, Key->GetVertices());
-	Key->Move(-15.0, 0.5, 38.0);
+	Key->Move(14.0, 0.5, 38.0);
 	Key->SetColor(1.0, 9.0, 0.0);
 
-	Ghost = new Object("models/ghost.obj", Cube->GetVerticesSize()+Pipe->GetVerticesSize()+Level->GetVerticesSize()+LevelFloor->GetVerticesSize()+Door->GetVerticesSize()+Key->GetVerticesSize(), colorLoc, matrix_loc);
-	combineVec4Vectors(vertices, Ghost->GetVertices());
+	// cout << "Ghost" << endl;
+	Ghost1 = new Object("models/ghost.obj", incrementIndex(NUMVERTICES, Key->GetVerticesSize()), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, Ghost1->GetVertices());
+	Ghost2 = new Object("models/ghost.obj", incrementIndex(NUMVERTICES, Ghost1->GetVerticesSize()), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, Ghost2->GetVertices());
+	Ghost3 = new Object("models/ghost.obj", incrementIndex(NUMVERTICES, Ghost2->GetVerticesSize()), colorLoc, matrix_loc);
+	combineVec4Vectors(vertices, Ghost3->GetVertices());
+	Ghost1->Move(-18.0, 1.0, 46.0);
+	Ghost2->Move(-18.0, 1.0, 52.0);
+	Ghost3->Move(-18.0, 1.0, 58.0);
 
 	cout << "Verts in vertices: " << vertices.size() << endl;
 	cout << camera.GetPos() << " " << Cube->GetPos() << endl;

@@ -12,10 +12,10 @@ Object::Object() {
 
 Object::Object(const char *filename, GLuint nindex, GLint ncolorLoc, GLint nmatrix_loc) {
 	// Default index is the start (0).
+	InitMesh(filename);
 	index = nindex;
 	matrix_loc = nmatrix_loc;
 	colorLoc = ncolorLoc;
-	InitMesh(filename);
 	x = y = z = 0.0;
 	goal_x = goal_y = goal_z = 0.0;
 	r = g = b = a = 1.0;

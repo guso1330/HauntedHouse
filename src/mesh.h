@@ -28,10 +28,15 @@ class Mesh {
 
 		// Manipulator Functions
 		void InitMesh(const char *filename);
+		void Get2dBoundingBox();
 
 		// Accessor functions
 		inline vector<vec4> GetVertices() const { return Vertices; }
 		inline unsigned int GetVerticesSize() const { return Vertices.size(); }
+		inline float GetMinx() const { return min_x; }
+		inline float GetMaxx() const { return max_x; }
+		inline float GetMinz() const { return min_z; }
+		inline float GetMaxz() const { return max_z; }
 
 		// Virtual Functions
 		virtual void DrawSolid() = 0;
@@ -49,6 +54,7 @@ class Mesh {
 		std::vector<vec4> Vertices;
 		std::vector<vec2> UVs;
 		std::vector<vec4> Normals;
+		float min_x, max_x, min_z, max_z;
 };
 
 // // Functions from square.h
